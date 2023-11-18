@@ -44,3 +44,42 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int]) -> 
         valid.append((x-1, y+1))
 
     return valid
+
+# get all the actions the player has to make to follow a path
+# @param start: the starting position of the player
+# @param path: the path to follow
+# @return: a list of actions
+def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> List[int]:
+    action_map = {
+        "N": 0,
+        "E": 1,
+        "S": 2,
+        "W": 3,
+        "NE": 4,
+        "SE": 5,
+        "SW": 6,
+        "NW": 7
+    }
+    actions = []
+    x_s, y_s = start
+    for (x, y) in path:
+        if x_s == x:
+            if y_s > y:
+                actions.append(action_map["N"])
+            else: actions.append(action_map["S"])
+        elif y_s == y:
+            if x_s > x:
+                actions.append(action_map["W"])
+            else: actions.append(action_map["E"])
+        elif x_s < x:
+            if y_s > y:
+                actions.append(action_map["NE"])
+            else: actions.append(action_map["SE"])
+        elif x_s > x:
+            if y_s > y:
+                actions.append(action_map["NW"])
+            else: actions.append(action_map["SW"])
+        x_s = x
+        y_s = y
+    
+    return actions
