@@ -3,25 +3,34 @@ import math
 
 from typing import Tuple, List
 
-# get the coordinates of the agent in the game map
-# @param game_map: the game map
-# @param symbol: the symbol of the agent 
-# @return: the coordinates of the agent
 def get_player_location(game_map: np.ndarray, symbol : str = "@") -> Tuple[int, int]:
+    """
+        gets the coordinates of the player in the game map
+        :param game_map: the game map
+        :param symbol: the symbol of the agent
+        :return: the coordinates of the agent
+    """
+
     x, y = np.where(game_map == ord(symbol))
     return (x[0], y[0])
 
-# check if an element is an obstacle(wall or river) in the game map
-# @param position_element: the code of the element to check 
 def is_obstacle(position_element: int) -> bool:
+    """
+        checks if the element in the position is an obstacle
+        :param position_element: the element to check
+    """
+
     obstacles = ["|- ", "}"]
     return chr(position_element) in obstacles
 
-# get all the valid moves the player can make from the current position
-# @param game_map: the game map as a matrix
-# @param current_position: the current position of the player
-# @return: a list of valid moves 
 def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int]) -> List[Tuple[int, int]]:
+    """
+        gets all the valid moves the player can make from the current position
+        :param game_map: the game map as a matrix
+        :param current_position: the current position of the agent
+        :return: a list of valid moves  
+    """
+
     x_limit, y_limit = game_map.shape
     valid = []
     x, y = current_position    
@@ -53,11 +62,14 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int]) -> 
 
     return valid
 
-# get all the actions the player has to make to follow a path
-# @param start: the starting position of the player
-# @param path: the path to follow
-# @return: a list of actions
 def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> List[int]:
+    """
+        gets all the actions the player has to make to follow a path
+        :param start: the starting position of the player
+        :param path: the path to follow
+        :return: a list of actions to perform
+    """
+    
     action_map = {
         "N": 0,
         "E": 1,
