@@ -26,18 +26,20 @@ def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray,
         not_same_y_coords = [move for move in not_same_coords if all(move[0] != boulder[0] for boulder in boulder_positions)]
             
         if not len(not_same_y_coords) > 0:
-            actions = [action_map(player_position, move) for move in not_same_coords]
+            actions = [action_map(player_position, move)[0] for move in not_same_coords]
         else:
-            actions = [action_map(player_position, move) for move in not_same_y_coords]  
+            actions = [action_map(player_position, move)[0] for move in not_same_y_coords]  
     
     else: #almost impossible to happen (agent completely cornered by boulders)
-        actions = [action_map(player_position, move) for move in valid_moves]
+        actions = [action_map(player_position, move)[0] for move in valid_moves]
 
     action = random.choice(actions)
     return action
 
-""" This function needs to be exported in the notebook (it was here just for testing)
-def find_river_coordinates(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]]:
+ #This function needs to be exported in the notebook (it was here just for testing)
+
+
+"""def find_river_coordinates(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]]:
     
         moves the player until a water block is found
         a river is assumed to be a vertical straight line of water blocks
