@@ -150,8 +150,8 @@ def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Tu
     }
     actions = []
     action_name = []
-    x_s, y_s = start
-    for (x, y) in path:
+    y_s, x_s = start
+    for (y, x) in path:
         if x_s == x:
             if y_s > y:
                 actions.append(action_map["N"])
