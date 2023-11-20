@@ -32,8 +32,9 @@ def is_obstacle(position_element: int) -> bool:
         :param position_element: the element to check
     """
 
-    obstacles = ["|- ", "}"]
-    return chr(position_element) in obstacles
+    wall = "|- "
+    river = "}"
+    return chr(position_element) in wall or chr(position_element) == river
 
 def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int]) -> List[Tuple[int, int]]:
     """
@@ -74,15 +75,16 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int]) -> 
 
     return valid
 
-def action_map(current_position: Tuple[int, int], new_position: Tuple[int, int]) -> int:
+def action_map(current_position: Tuple[int, int], new_position: Tuple[int, int]) -> Tuple[int,str]:
     """
         get the action to get to the new position from the current one
         :param new_position: the new coordinates of the agent
         :param current_position: current coordinates of the agent 
-        :return: the action to get to the new position
+        :return: the action to get to the new position and its relative name
     """
 
     action = -1
+    action_name = ""
     # i is raw, j is column of matrix
     i, j = current_position[0], current_position[1]
     i_new, j_new = new_position[0], new_position[1]
@@ -99,24 +101,36 @@ def action_map(current_position: Tuple[int, int], new_position: Tuple[int, int])
     if i_new == i:
         if j_new > j:
             action = action_map["E"]
-        else: action = action_map["W"]
+            action_name = "E"
+        else: 
+            action = action_map["W"]
+            action_name = "W"
     elif j_new == j:
         if i_new > i:
             action = action_map["S"]
-        else: action = action_map["N"]
+            action_name = "S"
+        else: 
+            action = action_map["N"]
+            action_name = "N"
     elif i_new < i:
         if j_new > j:
             action = action_map["NE"]
-        else: action = action_map["NW"]
+            action_name = "NE"
+        else: 
+            action = action_map["NW"]
+            action_name = "NW"
     elif i_new > i:
         if j_new > j:
             action = action_map["SE"]
-        else: action = action_map["SW"]
+            action_name = "SE"
+        else: 
+            action = action_map["SW"]
+            action_name = "SW"
 
-    return action
+    return action, action_name
 
 #TODO: exploit the action_map function
-def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> List[int]:
+def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Tuple[List[int], List[str]]:
     """
         gets all the actions the player has to make to follow a path
         :param start: the starting position of the player
