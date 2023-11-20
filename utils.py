@@ -135,25 +135,40 @@ def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Li
         "NW": 7
     }
     actions = []
+    action_name = []
     x_s, y_s = start
     for (x, y) in path:
         if x_s == x:
             if y_s > y:
                 actions.append(action_map["N"])
-            else: actions.append(action_map["S"])
+                action_name.append("N")
+            else: 
+                actions.append(action_map["S"])
+                action_name.append("S") 
         elif y_s == y:
             if x_s > x:
                 actions.append(action_map["W"])
-            else: actions.append(action_map["E"])
+                action_name.append("W") 
+            else: 
+                actions.append(action_map["E"])
+                action_name.append("E") 
         elif x_s < x:
             if y_s > y:
                 actions.append(action_map["NE"])
-            else: actions.append(action_map["SE"])
+                action_name.append("NE")    
+            else: 
+                actions.append(action_map["SE"])
+                action_name.append("SE")    
         elif x_s > x:
             if y_s > y:
                 actions.append(action_map["NW"])
-            else: actions.append(action_map["SW"])
+                action_name.append("NW")    
+            else: 
+                actions.append(action_map["SW"])
+                action_name.append("SW")    
         x_s = x
         y_s = y
+        
+        
     
-    return actions
+    return actions, action_name
