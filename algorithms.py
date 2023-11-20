@@ -15,7 +15,7 @@ def a_star(game : np.ndarray, game_map: np.ndarray, start: Tuple[int, int], targ
     support_list = {}
 
     starting_state_g = 0
-    starting_state_h = h(start, target)
+    starting_state_h = h(start,target)
     starting_state_f = starting_state_g + starting_state_h
 
     open_list.put((starting_state_f, (start, starting_state_g)))
@@ -30,8 +30,8 @@ def a_star(game : np.ndarray, game_map: np.ndarray, start: Tuple[int, int], targ
 
         if current == target:
             print("Target found!")
+            print(current)
             path = build_path(parent, target, game_map, game)
-            print_gamestate(game)
 
             return path
 
