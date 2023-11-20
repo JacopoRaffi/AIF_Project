@@ -14,6 +14,18 @@ def get_player_location(game_map: np.ndarray, symbol: str = "@") -> Tuple[int, i
     x, y = np.where(game_map == ord(symbol))
     return (x[0], y[0])
 
+def get_boulder_locationV(game_map: np.ndarray, symbol : str = "`") -> Tuple[int, int]:
+    """
+        gets the coordinates of the boulders in the game map
+        :param game_map: the game map
+        :param symbol: the symbol of the boulder
+        :return: the coordinates of the boulders
+    """
+
+    tuples = np.where(game_map == ord(symbol))
+    boulders_positions = list(zip(tuples[0], tuples[1])) #converte la lista di tuple in una lista di liste
+    return boulders_positions
+
 def is_obstacle(position_element: int) -> bool:
     """
         checks if the element in the position is an obstacle
@@ -71,8 +83,9 @@ def action_map(current_position: Tuple[int, int], new_position: Tuple[int, int])
     """
 
     action = -1
-    x, y = current_position[0], current_position[1]
-    x_new, y_new = new_position[0], new_position[1]
+    # i is raw, j is column of matrix
+    i, j = current_position[0], current_position[1]
+    i_new, j_new = new_position[0], new_position[1]
     action_map = {
         "N": 0,
         "E": 1,
@@ -83,25 +96,24 @@ def action_map(current_position: Tuple[int, int], new_position: Tuple[int, int])
         "SW": 6,
         "NW": 7
     }
-    if x_new == x:
-        if y_new > y:
-            action = action_map["N"]
-        else: action = action_map["S"]
-    elif y_new == y:
-        if x_new > x:
+    if i_new == i:
+        if j_new > j:
             action = action_map["E"]
         else: action = action_map["W"]
-    elif x_new < x:
-        if y_new > y:
-            action = action_map["NW"]
-        else: action = action_map["SW"]
-    elif x_new > x:
-        if y_new > y:
+    elif j_new == j:
+        if i_new > i:
+            action = action_map["S"]
+        else: action = action_map["N"]
+    elif i_new < i:
+        if j_new > j:
             action = action_map["NE"]
-        else: action = action_map["SE"]
+        else: action = action_map["NW"]
+    elif i_new > i:
+        if j_new > j:
+            action = action_map["SE"]
+        else: action = action_map["SW"]
 
     return action
-
 
 #TODO: exploit the action_map function
 def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> List[int]:
