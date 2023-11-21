@@ -35,10 +35,20 @@ def a_star(game : np.ndarray, game_map: np.ndarray, start: Tuple[int, int], targ
 
             return path
 
-        for neighbor in get_valid_moves(game_map, current):
+
+        
+        for neighbor in get_valid_moves(game_map, current, target, close_list):
+            #print(get_valid_moves(game_map, current, target))
             # check if neighbor in close list, if so continue
             if neighbor in close_list:
                 continue
+
+            '''
+            if neighbor  == target:
+                path = build_path(parent, target, game_map, game)
+                return path
+            '''
+            
             # compute neighbor g, h and f values
             neighbor_g = 1 + current_cost
             neighbor_h = h(neighbor, target)

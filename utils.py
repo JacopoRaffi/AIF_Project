@@ -26,7 +26,7 @@ def get_boulder_locationV(game_map: np.ndarray, symbol : str = "`") -> Tuple[int
     boulders_positions = list(zip(tuples[0], tuples[1])) #converte la lista di tuple in una lista di liste
     return boulders_positions
 
-def is_obstacle(position_element: int) -> bool:
+def is_obstacle(position_element: int, coordinates : Tuple[int,int], target_position: Tuple[int,int]) -> bool:
     """
         checks if the element in the position is an obstacle
         :param position_element: the element to check
@@ -34,9 +34,13 @@ def is_obstacle(position_element: int) -> bool:
 
     wall = "|- "
     river = "}"
+
+    if coordinates == target_position:
+        return True
+
     return chr(position_element) in wall or chr(position_element) == river
 
-def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int]) -> List[Tuple[int, int]]:
+def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], target_position: Tuple[int,int], close_list : List[Tuple[int,int]]) -> List[Tuple[int, int]]:
     """
         gets all the valid moves the player can make from the current position
         :param game_map: the game map as a matrix
@@ -49,28 +53,28 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int]) -> 
     x, y = current_position    
     
     # North valid move
-    if y - 1 > 0 and not is_obstacle(game_map[x, y-1]):
+    if y - 1 > 0 and not is_obstacle(game_map[x, y-1],current_position, target_position) and [x, y-1] not in close_list:
         valid.append((x, y-1)) 
     # East valid move
-    if x + 1 < x_limit and not is_obstacle(game_map[x+1, y]):
+    if x + 1 < x_limit and not is_obstacle(game_map[x+1, y], current_position, target_position) and [x+1, y] not in close_list:
         valid.append((x+1, y)) 
     # South valid move
-    if y + 1 < y_limit and not is_obstacle(game_map[x, y+1]):
+    if y + 1 < y_limit and not is_obstacle(game_map[x, y+1], current_position,target_position) and [x, y+1] not in close_list:
         valid.append((x, y+1)) 
     # West valid move
-    if x - 1 > 0 and not is_obstacle(game_map[x-1, y]):
+    if x - 1 > 0 and not is_obstacle(game_map[x-1, y], current_position,target_position) and [x-1, y] not in close_list:
         valid.append((x-1, y))
     # North-East valid move
-    if x + 1 < x_limit and y - 1 > 0 and not is_obstacle(game_map[x+1, y-1]):
+    if x + 1 < x_limit and y - 1 > 0 and not is_obstacle(game_map[x+1, y-1], current_position,target_position) and [x+1, y-1] not in close_list: 
         valid.append((x+1, y-1))
     # South-East valid move
-    if x + 1 < x_limit and y + 1 < y_limit and not is_obstacle(game_map[x+1, y+1]):
+    if x + 1 < x_limit and y + 1 < y_limit and not is_obstacle(game_map[x+1, y+1], current_position,target_position) and [x+1, y+1] not in close_list: 
         valid.append((x+1, y+1))
     # South-West valid move
-    if x - 1 > 0 and y + 1 < y_limit and not is_obstacle(game_map[x-1, y+1]):
+    if x - 1 > 0 and y + 1 < y_limit and not is_obstacle(game_map[x-1, y+1], current_position, target_position) and [x-1, y+1] not in close_list: 
         valid.append((x-1, y+1))
     # North-West valid move
-    if x - 1 > 0 and y - 1 > 0 and not is_obstacle(game_map[x-1, y-1]):
+    if x - 1 > 0 and y - 1 > 0 and not is_obstacle(game_map[x-1, y-1], current_position,target_position) and [x-1, y-1] not in close_list: 
         valid.append((x-1, y-1))
 
     return valid
