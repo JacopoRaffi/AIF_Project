@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import minihack
 import random
 
-from utils import get_valid_moves, get_player_location, action_map, get_boulder_locationV, is_obstacle
+from utils import *
 
 def avoid_the_obstacle(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int], obstacle_position: Tuple[int, int]):
     """
@@ -130,7 +130,32 @@ def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray,
 
  #This function needs to be exported in the notebook (it was here just for testing)
 
+def position_for_boulder_push(current_boulder_position: Tuple[int,int], new_boulder_position: Tuple[int,int]) -> Tuple[int,int]:
+    """
+        returns the position where the agent should be so to push a block
+        :param block_position: the current position of the block
+        :param new_boulder_position: the position where the block needs to be pushed
+        :return: the position where the agent should be so to move the block
+    """
+    i, j = current_boulder_position #raw and column of the position of the block
+    # map the move the boulder needs to do with the position the agent should be
+    coord_map = {
+        "N": (i+1,j),
+        "E": (i,j-1),
+        "S": (i-1,j), 
+        "W": (i,j+1),
+        "NE": (i+1,j-1),
+        "SE": (i-1,j-1),
+        "SW": (i-1,j+1),
+        "NW": (i+1,j+1)
+    }
 
+    action, action_name = action_map(current_boulder_position, new_boulder_position) #check the action the boulder has to do
+
+    return coord_map[action_name] #return the position the agent should be given the move the boulder needs to do 
+
+
+# this funciton was just for testing (its body will be put in the notebook)
 """def find_river_coordinates(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]]:
     
         moves the player until a water block is found
