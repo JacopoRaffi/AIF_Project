@@ -7,7 +7,99 @@ import matplotlib.pyplot as plt
 import minihack
 import random
 
-from utils import get_valid_moves, get_player_location, action_map, get_boulder_locationV
+from utils import get_valid_moves, get_player_location, action_map, get_boulder_locationV, is_obstacle
+
+def avoid_the_obstacle(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int], obstacle_position: Tuple[int, int]):
+    """
+        manage the player stuck by an obstacle (boulder or river)
+        :param valid_moves: all the moves the agent can perform from its position
+        :param game_map: the game map as a matrix
+        :param player_position: the current position of the agent
+        :param obstacle_position: the position of the obstacle
+    """
+
+    # get the direction the player is following
+    direction = action_map(player_position, obstacle_position)
+    new_player_position = player_position
+
+    # check if the obstacle is a river, else is a boulder
+    if game_map[obstacle_position] == ord("}"):
+
+        # the player is going East
+        if direction[1] == "E":
+            # vai a N -> SE -> SE
+            new_player_position = (new_player_position[0] - 1, new_player_position[1])
+            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
+            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
+            # altrimenti vai a S -> S -> NE -> NE
+            new_player_position = (new_player_position[0] + 1, new_player_position[1])
+            new_player_position = (new_player_position[0] + 1, new_player_position[1])
+            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+            # vai a S -> NE -> NE
+            new_player_position = (new_player_position[0] + 1, new_player_position[1])
+            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+            # altrimenti vai a N -> N -> SE -> SE
+            new_player_position = (new_player_position[0] - 1, new_player_position[1])
+            new_player_position = (new_player_position[0] - 1, new_player_position[1])
+            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
+            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
+
+        elif direction[1] == "NE":
+            # vai a N -> E (+ rischio blocco) -> E
+            # vai a N
+            new_player_position = (new_player_position[0] - 1, new_player_position[1])
+            # vai a E
+            new_player_position = (new_player_position[0], new_player_position[1] + 1)
+            # IF (rischio blocco) THEN vai a N -> SE (rischio blocco) -> SE
+                # vai a N
+            new_player_position = (new_player_position[0] - 1, new_player_position[1])
+                # vai a SE
+            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
+                # IF (rischio blocco) THEN
+                    # CASO DA DECIDERE
+                # ELSE vai a SE
+            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
+            # ELSE vai a E
+            new_player_position = (new_player_position[0], new_player_position[1] + 1)
+            
+        elif direction[1] == "SE":
+            # vai a S -> E (rischio blocco) -> E
+            # vai a S
+            new_player_position = (new_player_position[0] + 1, new_player_position[1])
+            # vai a E
+            new_player_position = (new_player_position[0], new_player_position[1] + 1)
+            # IF (rischio blocco) THEN vai a S -> NE (rischio blocco) -> NE
+                # vai a S
+            new_player_position = (new_player_position[0] + 1, new_player_position[1])
+                # vai a NE
+            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+                # IF (rischio blocco) THEN
+                    # CASO DA DECIDERE
+                # ELSE vai a NE
+            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+            # ELSE vai a E
+            new_player_position = (new_player_position[0], new_player_position[1] + 1)
+            
+                
+    """else:
+        if direction[1] == "E":
+
+        elif direction[1] == "NE":
+
+        elif direction[1] == "SE":
+
+        elif direction[1] == "S":
+
+        elif direction[1] == "SW":
+
+        elif direction[1] == "W":
+
+        elif direction[1] == "NW":
+
+        elif direction[1] == "N":
+    """
 
 def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int]) -> int: 
     """
