@@ -9,10 +9,9 @@ import random
 
 from utils import *
 
-def avoid_the_obstacle(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int], obstacle_position: Tuple[int, int]):
+def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], obstacle_position: Tuple[int, int]):
     """
         manage the player stuck by an obstacle (boulder or river)
-        :param valid_moves: all the moves the agent can perform from its position
         :param game_map: the game map as a matrix
         :param player_position: the current position of the agent
         :param obstacle_position: the position of the obstacle
@@ -20,22 +19,70 @@ def avoid_the_obstacle(valid_moves: List[Tuple[int, int]], game_map: np.ndarray,
 
     # get the direction the player is following
     direction = action_map(player_position, obstacle_position)
+    
+    
     new_player_position = player_position
+
+    valid_moves = get_valid_moves(game_map, player_position, obstacle_position)
+
 
     # check if the obstacle is a river, else is a boulder
     if game_map[obstacle_position] == ord("}"):
 
         # the player is going East
         if direction[1] == "E":
-            # vai a N -> SE -> SE
-            new_player_position = (new_player_position[0] - 1, new_player_position[1])
-            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
-            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
-            # altrimenti vai a S -> S -> NE -> NE
-            new_player_position = (new_player_position[0] + 1, new_player_position[1])
-            new_player_position = (new_player_position[0] + 1, new_player_position[1])
-            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
-            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+            # vai a N -> SE (rischio blocco) -> SE
+            # TODO cambiare is_obstacle perchè non so cosa sto passando
+            if [player_position[0] - 1, player_position[1]] in valid_moves:
+                # vai a N
+                new_player_position = (new_player_position[0] - 1, new_player_position[1])
+                # TODO performa spostamento N
+                # vai a SE
+                new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
+                # TODO performa spostamento SE
+                # IF (rischio blocco) THEN vai a S -> S -> NE (rischio blocco) -> NE
+                if is_player_same_position(get_player_location, new_player_position):
+                    # vai a S
+                    new_player_position = (new_player_position[0] + 1, new_player_position[1])
+                    if not is_obstacle(game_map[new_player_position[0] + 1, new_player_position[1]], new_player_position, obstacle_position):
+                        # vai a S
+                        new_player_position = (new_player_position[0] + 1, new_player_position[1])
+                        # vai a NE
+                        new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+                        # IF (rischio blocco) THEN
+                        if is_player_same_position(get_player_location, new_player_position):
+                            # spostare il masso in altra casella
+                            """
+                                CASO DA DECIDERE
+                            """
+                        else:
+                            # ELSE vai a NE
+                            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+                else:
+                    # ELSE vai a SE
+                    new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
+                    # TODO performa spostamento SE
+                    if is_player_same_position(get_player_location, new_player_position):
+                        # masso affondato ricercare path alternativo
+                        """
+                            CASO DA DECIDERE
+                        """
+            else:
+                # vai a S -> NE (rischio blocco) -> NE
+                # vai a S
+                new_player_position = (new_player_position[0] + 1, new_player_position[1])
+                if not is_obstacle(game_map[new_player_position[0] + 1, new_player_position[1]], new_player_position, obstacle_position):
+                    # vai a NE
+                    new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
+                # IF (rischio blocco) THEN
+                if is_player_same_position(get_player_location, new_player_position):
+                    # spostare il masso in altra casella
+                    """
+                        CASO DA DECIDERE
+                    """
+                else:
+                    # ELSE vai a NE
+                    new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
             # vai a S -> NE -> NE
             new_player_position = (new_player_position[0] + 1, new_player_position[1])
             new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
@@ -47,7 +94,7 @@ def avoid_the_obstacle(valid_moves: List[Tuple[int, int]], game_map: np.ndarray,
             new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
 
         elif direction[1] == "NE":
-            # vai a N -> E (+ rischio blocco) -> E
+            # vai a N -> E (rischio blocco) -> E
             # vai a N
             new_player_position = (new_player_position[0] - 1, new_player_position[1])
             # vai a E
@@ -100,6 +147,16 @@ def avoid_the_obstacle(valid_moves: List[Tuple[int, int]], game_map: np.ndarray,
 
         elif direction[1] == "N":
     """
+
+
+def is_player_same_position(now_position: Tuple[int, int], before_position: Tuple[int, int]) -> bool:
+    """
+        checks if the player is in the same position
+        :param now_position: the current position of the player
+        :param before_position: the previous position of the player 
+    """
+    return now_position == before_position
+
 
 def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int]) -> int: 
     """
