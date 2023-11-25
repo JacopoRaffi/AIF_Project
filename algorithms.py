@@ -2,7 +2,7 @@ import numpy as np
 
 from collections import deque
 from queue import PriorityQueue
-from utils import get_valid_moves
+from utils import get_valid_moves, get_player_location, chebyshev_dist
 from typing import Tuple, List
 import matplotlib.pyplot as plt
 
@@ -78,6 +78,72 @@ def print_gamestate(state):
     plt.imshow(state[100:250, 400:750]) #Immagine ristretta con range [y][x]
 
 
-def get_player_location(game_map: np.ndarray, symbol : str = "@") -> Tuple[int, int]:
-    x, y = np.where(game_map == ord(symbol))
-    return (x[0], y[0])
+#Trova la minima distanza tra un punto e una serie di punti considerando movimenti diagonali
+def get_min_distance_point_to_points(x, y, list_of_pairs):
+    """
+    Calculates the minimum distance between a point (x, y) and a list of pairs of coordinates using chebyshev distance.
+
+    Args:
+        x (int): The x-coordinate of the point.
+        y (int): The y-coordinate of the point.
+        list_of_pairs (list): A list of pairs of coordinates.
+
+    Returns:
+        tuple: A tuple containing the coordinates of the pair with the minimum distance and the minimum distance itself.
+    """
+    min_dist = 999999999
+    for i in list_of_pairs:
+        dist = chebyshev_dist(x, y, i[0], i[1])
+        if dist < min_dist:
+            min_dist = dist
+            coordinates = [i[0], i[1]]
+    return coordinates, min_dist
+
+def get_optimal_distance_point_to_point(start: Tuple[int, int], target : Tuple[int,int]) -> int:
+    """
+    Calculate the optimal distance between two points.
+
+    Args:
+        start (Tuple[int, int]): The starting point coordinates.
+        target (Tuple[int, int]): The target point coordinates.
+
+    Returns:
+        int: The optimal distance between the two points.
+    """
+    targetX = target[0]
+    targetY = target[1]
+    dist_point_to_point = chebyshev_dist(start[0],start[1], targetX, targetY)
+    
+    dist = dist_point_to_point #-1
+
+    return dist
+
+
+
+def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,int]], river_positions : List[Tuple[int,int]]) -> Tuple[int, int]:
+    """
+    Calculates the best global distance between the start point, boulders, and river positions.
+
+    Args:
+        start (Tuple[int, int]): The starting point coordinates.
+        boulders (List[Tuple[int,int]]): List of boulder coordinates.
+        river_positions (List[Tuple[int,int]]): List of river position coordinates.
+
+    Returns:
+        Tuple[int, int]: The coordinates of the boulder with the best global distance.
+    """
+   
+    distances = []
+    
+    for boulder in boulders:
+        x = boulder[0]
+        y = boulder[1]
+
+        dist_player_boulder = get_optimal_distance_point_to_point(start, boulder)
+        
+        dist_boulder_river = get_min_distance_point_to_points(boulder[0],boulder[1], river_positions)
+        dist = dist_player_boulder + dist_boulder_river[1] #position 1 is just the value
+        distances.append((x, y, dist))
+
+    min_distance = min(distances, key=lambda x: x[2])
+    return min_distance[0], min_distance[1]

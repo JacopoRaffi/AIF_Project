@@ -1,7 +1,12 @@
 import numpy as np
 import math
+import time
+import matplotlib.pyplot as plt
+import IPython.display as display
+
 
 from typing import Tuple, List
+
 
 def get_player_location(game_map: np.ndarray, symbol: str = "@") -> Tuple[int, int]:
     """
@@ -14,7 +19,7 @@ def get_player_location(game_map: np.ndarray, symbol: str = "@") -> Tuple[int, i
     x, y = np.where(game_map == ord(symbol))
     return (x[0], y[0])
 
-def get_boulder_locationV(game_map: np.ndarray, symbol : str = "`") -> Tuple[int, int]:
+def get_boulder_locations(game_map: np.ndarray, symbol : str = "`") -> List[Tuple[int, int]]:
     """
         gets the coordinates of the boulders in the game map
         :param game_map: the game map
@@ -25,6 +30,21 @@ def get_boulder_locationV(game_map: np.ndarray, symbol : str = "`") -> Tuple[int
     tuples = np.where(game_map == ord(symbol))
     boulders_positions = list(zip(tuples[0], tuples[1])) #converte la lista di tuple in una lista di liste
     return boulders_positions
+
+def get_river_locations(game_map: np.ndarray, symbol : str = "}") -> List[Tuple[int, int]]:
+    """
+    Returns the positions of the specified symbol in the game map.
+
+    Parameters:
+    game_map (np.ndarray): The game map represented as a numpy array.
+    symbol (str): The symbol to search for in the game map. Default is "}".
+
+    Returns:
+    Tuple[int, int]: A tuple containing the row and column indices of the symbol in the game map.
+    """
+    tuples = np.where(game_map == ord(symbol))
+    river_positions = list(zip(tuples[0], tuples[1]))
+    return river_positions
 
 def is_obstacle(position_element: int, coordinates : Tuple[int,int], target_position: Tuple[int,int]) -> bool:
     """
@@ -190,3 +210,51 @@ def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Tu
         
     
     return actions, action_name
+
+def manhattan_distance(x1: int, y1: int, x2: int, y2: int):
+    """
+    Calculate the Manhattan distance between two positions, without considering diagonal moves.
+    (4 directions)
+
+    Parameters:
+    x1 (int): The x-coordinate of the first position.
+    y1 (int): The y-coordinate of the first position.
+    x2 (int): The x-coordinate of the second position.
+    y2 (int): The y-coordinate of the second position.
+
+    Returns:
+    int: The Manhattan distance between the two position.
+    """
+    return abs(x1 - x2) + abs(y1 - y2)
+
+
+def chebyshev_dist(x1 : int, y1 : int, x2 : int, y2 : int): 
+    """
+    Calculate the Chebyshev distance between two points (x1, y1) and (x2, y2).
+    Considers the diagonal moves. (8 directions)
+    
+    Parameters:
+    x1 (int): x-coordinate of the first point.
+    y1 (int): y-coordinate of the first point.
+    x2 (int): x-coordinate of the second point.
+    y2 (int): y-coordinate of the second point.
+    
+    Returns:
+    int: The Chebyshev distance between the two points.
+    """
+    y_dist = abs(y1 - y2)
+    x_dist = abs(x1 - x2)
+    return max(y_dist, x_dist)
+
+
+def plot_animated_sequence(env ,game: np.ndarray , game_map : np.ndarray, actions : list[int]):
+    image = plt.imshow(game[25:300, :475])
+    player_positions = []
+    for action in actions:
+        s, _, _, _ = env.step(action)
+        display.display(plt.gcf())
+        display.clear_output(wait=True)
+        image.set_data(s['pixel'][:, :])
+        player_positions.append(get_player_location(game_map))
+        time.sleep(0.5)
+    return player_positions
