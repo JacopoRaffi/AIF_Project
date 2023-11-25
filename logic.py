@@ -9,18 +9,19 @@ import random
 
 from utils import *
 
-def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], obstacle_position: Tuple[int, int]):
+def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], obstacle_position: Tuple[int, int]) -> int:
     """
         manage the player stuck by an obstacle (boulder or river)
         :param game_map: the game map as a matrix
         :param player_position: the current position of the agent
         :param obstacle_position: the position of the obstacle
+        :return: the result (0 for avoid the boulder, 1 for pass the river, -1 for stuck)
     """
 
     # get the direction the player is following
     direction = action_map(player_position, obstacle_position)
     
-    
+    prev_player_position = player_position
     new_player_position = player_position
 
     valid_moves = get_valid_moves(game_map, player_position, obstacle_position)
@@ -31,131 +32,441 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
 
         # the player is going East
         if direction[1] == "E":
-            # vai a N -> SE (rischio blocco) -> SE
-            # TODO cambiare is_obstacle perchè non so cosa sto passando
-            if [player_position[0] - 1, player_position[1]] in valid_moves:
+            # vai a N (forse muro) -> SE (rischio blocco fiume) -> SE
+            if [new_player_position[0] - 1, new_player_position[1]] in valid_moves:
                 # vai a N
-                new_player_position = (new_player_position[0] - 1, new_player_position[1])
-                # TODO performa spostamento N
+                # env.step(0)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
                 # vai a SE
-                new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
-                # TODO performa spostamento SE
-                # IF (rischio blocco) THEN vai a S -> S -> NE (rischio blocco) -> NE
-                if is_player_same_position(get_player_location, new_player_position):
-                    # vai a S
-                    new_player_position = (new_player_position[0] + 1, new_player_position[1])
-                    if not is_obstacle(game_map[new_player_position[0] + 1, new_player_position[1]], new_player_position, obstacle_position):
-                        # vai a S
-                        new_player_position = (new_player_position[0] + 1, new_player_position[1])
-                        # vai a NE
-                        new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
-                        # IF (rischio blocco) THEN
-                        if is_player_same_position(get_player_location, new_player_position):
-                            # spostare il masso in altra casella
-                            """
-                                CASO DA DECIDERE
-                            """
-                        else:
-                            # ELSE vai a NE
-                            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
-                else:
-                    # ELSE vai a SE
-                    new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
-                    # TODO performa spostamento SE
-                    if is_player_same_position(get_player_location, new_player_position):
+                # env.step(5)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati THEN -> SE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # vai a SE
+                    # env.step(5)
+                    prev_player_position = new_player_position
+                    new_player_position = get_player_location
+                    
+                    # vai nella nuova casella creata a SE
+                    # env.step(5)
+                    prev_player_position = new_player_position
+                    new_player_position = get_player_location
+                    if is_player_same_position(new_player_position, prev_player_position):
                         # masso affondato ricercare path alternativo
                         """
                             CASO DA DECIDERE
                         """
-            else:
-                # vai a S -> NE (rischio blocco) -> NE
+                    else:
+                        # attraversa il fiume
+                        pass_the_river(game_map, new_player_position, 1)
+                        return 1
+                    
+                # ELSE vai a S
+                # env.step(2)   
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+
+            # vai a S (forse muro) -> NE (rischio blocco fiume) -> NE
+            if [new_player_position[0] + 1, new_player_position[1]] in valid_moves:
                 # vai a S
-                new_player_position = (new_player_position[0] + 1, new_player_position[1])
-                if not is_obstacle(game_map[new_player_position[0] + 1, new_player_position[1]], new_player_position, obstacle_position):
+                # env.step(2)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # vai a NE
+                # env.step(4)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati THEN -> NE
+                if not is_player_same_position(new_player_position, prev_player_position):
                     # vai a NE
-                    new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
-                # IF (rischio blocco) THEN
-                if is_player_same_position(get_player_location, new_player_position):
-                    # spostare il masso in altra casella
+                    # env.step(4)
+                    prev_player_position = new_player_position
+                    new_player_position = get_player_location
+
+                    # vai nella nuova casella creata a NE
+                    # env.step(4)
+                    prev_player_position = new_player_position
+                    new_player_position = get_player_location
+                    if is_player_same_position(new_player_position, prev_player_position):
+                        # masso affondato ricercare path alternativo
+                        """
+                            CASO DA DECIDERE
+                        """
+                    else:
+                        # attraversa il fiume
+                        pass_the_river(game_map, new_player_position, 1)
+                        return 1
+            else:     
+                # bisogna spostare il masso di una casella e ricalcolare il path
+                """
+                    CASO DA DECIDERE
+                """
+
+        elif direction[1] == "NE":
+            # vai a N -> E (rischio blocco fiume) -> E
+            # vai a N
+            # env.step(0)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location
+            # vai a E
+            # env.step(1)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location
+            # IF non siamo bloccati THEN -> E
+            if not is_player_same_position(new_player_position, prev_player_position):
+                # vai a E
+                # env.step(1)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+
+                # vai nella nuova casella creata a E
+                # env.step(1)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                if is_player_same_position(new_player_position, prev_player_position):
+                    # masso affondato ricercare path alternativo
                     """
                         CASO DA DECIDERE
                     """
                 else:
-                    # ELSE vai a NE
-                    new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
-            # vai a S -> NE -> NE
-            new_player_position = (new_player_position[0] + 1, new_player_position[1])
-            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
-            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
-            # altrimenti vai a N -> N -> SE -> SE
-            new_player_position = (new_player_position[0] - 1, new_player_position[1])
-            new_player_position = (new_player_position[0] - 1, new_player_position[1])
-            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
-            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
-
-        elif direction[1] == "NE":
-            # vai a N -> E (rischio blocco) -> E
+                    # attraversa il fiume
+                    pass_the_river(game_map, new_player_position, 1)
+                    return 1
+            
+            # vai a N -> SE (rischio blocco fiume) -> SE
             # vai a N
-            new_player_position = (new_player_position[0] - 1, new_player_position[1])
-            # vai a E
-            new_player_position = (new_player_position[0], new_player_position[1] + 1)
-            # IF (rischio blocco) THEN vai a N -> SE (rischio blocco) -> SE
-                # vai a N
-            new_player_position = (new_player_position[0] - 1, new_player_position[1])
+            # env.step(0)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location
+            # vai a SE
+            # env.step(5)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location
+            # IF non siamo bloccati THEN -> SE
+            if not is_player_same_position(new_player_position, prev_player_position):
                 # vai a SE
-            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
-                # IF (rischio blocco) THEN
-                    # CASO DA DECIDERE
-                # ELSE vai a SE
-            new_player_position = (new_player_position[0] + 1, new_player_position[1] + 1)
-            # ELSE vai a E
-            new_player_position = (new_player_position[0], new_player_position[1] + 1)
+                # env.step(5)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+
+                # vai nella nuova casella creata a SE
+                # env.step(5)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                if is_player_same_position(new_player_position, prev_player_position):
+                    # masso affondato ricercare path alternativo
+                    """
+                        CASO DA DECIDERE
+                    """
+                else:
+                    # attraversa il fiume
+                    pass_the_river(game_map, new_player_position, 1)
+                    return 1
             
         elif direction[1] == "SE":
-            # vai a S -> E (rischio blocco) -> E
+            # vai a S -> E (rischio blocco fiume) -> E
             # vai a S
-            new_player_position = (new_player_position[0] + 1, new_player_position[1])
+            # env.step(2)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location
             # vai a E
-            new_player_position = (new_player_position[0], new_player_position[1] + 1)
-            # IF (rischio blocco) THEN vai a S -> NE (rischio blocco) -> NE
-                # vai a S
-            new_player_position = (new_player_position[0] + 1, new_player_position[1])
+            # env.step(1)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location
+            # IF non siamo bloccati THEN -> E
+            if not is_player_same_position(new_player_position, prev_player_position):
+                # vai a E
+                # env.step(1)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+
+                # vai nella nuova casella creata a E
+                # env.step(1)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                if is_player_same_position(new_player_position, prev_player_position):
+                    # masso affondato ricercare path alternativo
+                    """
+                        CASO DA DECIDERE
+                    """
+                else:
+                    # attraversa il fiume
+                    pass_the_river(game_map, new_player_position, 1)
+                    return 1
+                
+            # vai a S -> NE (rischio blocco fiume) -> NE
+            # vai a S
+            # env.step(2)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location
+            # vai a NE
+            # env.step(4)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location
+            # IF non siamo bloccati THEN -> NE
+            if not is_player_same_position(new_player_position, prev_player_position):
                 # vai a NE
-            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
-                # IF (rischio blocco) THEN
-                    # CASO DA DECIDERE
-                # ELSE vai a NE
-            new_player_position = (new_player_position[0] - 1, new_player_position[1] + 1)
-            # ELSE vai a E
-            new_player_position = (new_player_position[0], new_player_position[1] + 1)
+                # env.step(4)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+
+                # vai nella nuova casella creata a NE
+                # env.step(4)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                if is_player_same_position(new_player_position, prev_player_position):
+                    # masso affondato ricercare path alternativo
+                    """
+                        CASO DA DECIDERE
+                    """
+                else:
+                    # attraversa il fiume
+                    pass_the_river(game_map, new_player_position, 1)
+                    return 1
             
                 
-    """else:
+    else:
         if direction[1] == "E":
-
-        elif direction[1] == "NE":
-
-        elif direction[1] == "SE":
+            # vai a NE (forse muro), altrimenti SE
+            if [new_player_position[0] + 1, new_player_position[1] - 1] in valid_moves:
+                # vai a NE
+                # env.step(4)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE, altrimenti SE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            else:
+                # vai a SE
+                # env.step(5)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            
+            # non ci siamo spostati
+            """
+                CASO DA DECIDERE
+            """
 
         elif direction[1] == "S":
-
-        elif direction[1] == "SW":
-
+            # vai a SE (forse muro), altrimenti SW
+            if [new_player_position[0] - 1, new_player_position[1] - 1] in valid_moves:
+                # vai a SE
+                # env.step(5)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE, altrimenti SW
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            else:
+                # vai a SW
+                # env.step(6)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            
+            # non ci siamo spostati
+            """
+                CASO DA DECIDERE
+            """
+        
         elif direction[1] == "W":
-
-        elif direction[1] == "NW":
+            # vai a SW (forse muro), altrimenti NW
+            if [new_player_position[0] - 1, new_player_position[1] + 1] in valid_moves:
+                # vai a SW
+                # env.step(6)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE, altrimenti NW
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            else:
+                # vai a NW
+                # env.step(7)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            
+            # non ci siamo spostati
+            """
+                CASO DA DECIDERE
+            """
 
         elif direction[1] == "N":
-    """
+            # vai a NW (forse muro), altrimenti NE
+            if [new_player_position[0] + 1, new_player_position[1] + 1] in valid_moves:
+                # vai a NW
+                # env.step(7)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE, altrimenti NE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            else:
+                # vai a NE
+                # env.step(4)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            
+            # non ci siamo spostati
+            """
+                CASO DA DECIDERE
+            """
+
+        elif direction[1] == "NE":
+            # vai a N (forse muro), altrimenti E
+            if [new_player_position[0] + 1, new_player_position[1]] in valid_moves:
+                # vai a N
+                # env.step(0)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE, altrimenti E
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            else:
+                # vai a E
+                # env.step(1)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            
+            # non ci siamo spostati
+            """
+                CASO DA DECIDERE
+            """
+
+        elif direction[1] == "SE":
+            # vai a S (forse muro), altrimenti E
+            if [new_player_position[0] - 1, new_player_position[1]] in valid_moves:
+                # vai a S
+                # env.step(2)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE, altrimenti E
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            else:
+                # vai a E
+                # env.step(1)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            
+            # non ci siamo spostati
+            """
+                CASO DA DECIDERE
+            """
+
+        elif direction[1] == "SW":
+            # vai a S (forse muro), altrimenti W
+            if [new_player_position[0] - 1, new_player_position[1]] in valid_moves:
+                # vai a S
+                # env.step(2)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE, altrimenti W
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            else:
+                # vai a W
+                # env.step(3)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            
+            # non ci siamo spostati
+            """
+                CASO DA DECIDERE
+            """
+
+        elif direction[1] == "NW":
+            # vai a N (forse muro), altrimenti W
+            if [new_player_position[0] + 1, new_player_position[1]] in valid_moves:
+                # vai a N
+                # env.step(0)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE, altrimenti W
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            else:
+                # vai a W
+                # env.step(3)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location
+                # IF non siamo bloccati FINE
+                if not is_player_same_position(new_player_position, prev_player_position):
+                    # ricalcolare path migliore
+                    return 0
+            
+            # non ci siamo spostati
+            """
+                CASO DA DECIDERE
+            """
+
+    # player is still stuck
+    return -1
 
 
-def is_player_same_position(now_position: Tuple[int, int], before_position: Tuple[int, int]) -> bool:
+
+def is_player_same_position(now_position: Tuple[int, int], prev_position: Tuple[int, int]) -> bool:
     """
         checks if the player is in the same position
         :param now_position: the current position of the player
-        :param before_position: the previous position of the player 
+        :param prev_position: the previous position of the player 
     """
-    return now_position == before_position
+    return now_position == prev_position
+
+
+
+def pass_the_river(game_map: np.ndarray, player_position: Tuple[int, int], direction: int):
+    """
+        moves the player so to pass the river
+        :param game_map: the game map as a matrix
+        :param player_position: the current position of the agent
+        :param direction: the direction to pass the river
+    """
+
+    prev_player_position = player_position
+    new_player_position = player_position
+
+    while is_player_same_position(new_player_position, prev_player_position):
+        # env.step(direction)
+        prev_player_position = new_player_position
+        new_player_position = get_player_location
+    
 
 
 def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int]) -> int: 
