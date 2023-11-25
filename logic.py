@@ -9,7 +9,7 @@ import random
 
 from utils import *
 
-def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], obstacle_position: Tuple[int, int]) -> int:
+def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], obstacle_position: Tuple[int, int], env: gym.Env) -> int:
     """
         manage the player stuck by an obstacle (boulder or river)
         :param game_map: the game map as a matrix
@@ -35,24 +35,24 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
             # vai a N (forse muro) -> SE (rischio blocco fiume) -> SE
             if [new_player_position[0] - 1, new_player_position[1]] in valid_moves:
                 # vai a N
-                # env.step(0)
+                state,_,_,_ = env.step(0)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # vai a SE
-                # env.step(5)
+                state,_,_,_ = env.step(5)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati THEN -> SE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # vai a SE
-                    # env.step(5)
+                    state,_,_,_ = env.step(5)
                     prev_player_position = new_player_position
-                    new_player_position = get_player_location
+                    new_player_position = get_player_location(state["chars"])
                     
                     # vai nella nuova casella creata a SE
-                    # env.step(5)
+                    state,_,_,_ = env.step(5)
                     prev_player_position = new_player_position
-                    new_player_position = get_player_location
+                    new_player_position = get_player_location(state["chars"])
                     if is_player_same_position(new_player_position, prev_player_position):
                         # masso affondato ricercare path alternativo
                         """
@@ -60,35 +60,35 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
                         """
                     else:
                         # attraversa il fiume
-                        pass_the_river(game_map, new_player_position, 1)
+                        pass_the_river(state["chars"], new_player_position, 1)
                         return 1
                     
                 # ELSE vai a S
-                # env.step(2)   
+                state,_,_,_ = env.step(2)   
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
 
             # vai a S (forse muro) -> NE (rischio blocco fiume) -> NE
             if [new_player_position[0] + 1, new_player_position[1]] in valid_moves:
                 # vai a S
-                # env.step(2)
+                state,_,_,_ = env.step(2)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # vai a NE
-                # env.step(4)
+                state,_,_,_ = env.step(4)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati THEN -> NE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # vai a NE
-                    # env.step(4)
+                    state,_,_,_ = env.step(4)
                     prev_player_position = new_player_position
-                    new_player_position = get_player_location
+                    new_player_position = get_player_location(state["chars"])
 
                     # vai nella nuova casella creata a NE
-                    # env.step(4)
+                    state,_,_,_ = env.step(4)
                     prev_player_position = new_player_position
-                    new_player_position = get_player_location
+                    new_player_position = get_player_location(state["chars"])
                     if is_player_same_position(new_player_position, prev_player_position):
                         # masso affondato ricercare path alternativo
                         """
@@ -96,7 +96,7 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
                         """
                     else:
                         # attraversa il fiume
-                        pass_the_river(game_map, new_player_position, 1)
+                        pass_the_river(state["chars"], new_player_position, 1)
                         return 1
             else:     
                 # bisogna spostare il masso di una casella e ricalcolare il path
@@ -107,13 +107,13 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
         elif direction[1] == "NE":
             # vai a N -> E (rischio blocco fiume) -> E
             # vai a N
-            # env.step(0)
+            state,_,_,_ = env.step(0)
             prev_player_position = new_player_position
-            new_player_position = get_player_location
+            new_player_position = get_player_location(state["chars"])
             # vai a E
-            # env.step(1)
+            state,_,_,_ = env.step(1)
             prev_player_position = new_player_position
-            new_player_position = get_player_location
+            new_player_position = get_player_location(state["chars"])
             # IF non siamo bloccati THEN -> E
             if not is_player_same_position(new_player_position, prev_player_position):
                 # vai a E
@@ -137,13 +137,13 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
             
             # vai a N -> SE (rischio blocco fiume) -> SE
             # vai a N
-            # env.step(0)
+            state,_,_,_ = env.step(0)
             prev_player_position = new_player_position
-            new_player_position = get_player_location
+            new_player_position = get_player_location(state["chars"])
             # vai a SE
-            # env.step(5)
+            state,_,_,_ = env.step(5)
             prev_player_position = new_player_position
-            new_player_position = get_player_location
+            new_player_position = get_player_location(state["chars"])
             # IF non siamo bloccati THEN -> SE
             if not is_player_same_position(new_player_position, prev_player_position):
                 # vai a SE
@@ -168,13 +168,13 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
         elif direction[1] == "SE":
             # vai a S -> E (rischio blocco fiume) -> E
             # vai a S
-            # env.step(2)
+            state,_,_,_ = env.step(2)
             prev_player_position = new_player_position
-            new_player_position = get_player_location
+            new_player_position = get_player_location(state["chars"])
             # vai a E
-            # env.step(1)
+            state,_,_,_ = env.step(1)
             prev_player_position = new_player_position
-            new_player_position = get_player_location
+            new_player_position = get_player_location(state["chars"])
             # IF non siamo bloccati THEN -> E
             if not is_player_same_position(new_player_position, prev_player_position):
                 # vai a E
@@ -198,24 +198,24 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
                 
             # vai a S -> NE (rischio blocco fiume) -> NE
             # vai a S
-            # env.step(2)
+            state,_,_,_ = env.step(2)
             prev_player_position = new_player_position
-            new_player_position = get_player_location
+            new_player_position = get_player_location(state["chars"])
             # vai a NE
-            # env.step(4)
+            state,_,_,_ = env.step(4)
             prev_player_position = new_player_position
-            new_player_position = get_player_location
+            new_player_position = get_player_location(state["chars"])
             # IF non siamo bloccati THEN -> NE
             if not is_player_same_position(new_player_position, prev_player_position):
                 # vai a NE
-                # env.step(4)
+                state,_,_,_ = env.step(4)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
 
                 # vai nella nuova casella creata a NE
-                # env.step(4)
+                state,_,_,_ = env.step(4)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 if is_player_same_position(new_player_position, prev_player_position):
                     # masso affondato ricercare path alternativo
                     """
@@ -223,27 +223,26 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
                     """
                 else:
                     # attraversa il fiume
-                    pass_the_river(game_map, new_player_position, 1)
+                    pass_the_river(state["chars"], new_player_position, 1)
                     return 1
-            
                 
     else:
         if direction[1] == "E":
             # vai a NE (forse muro), altrimenti SE
-            if [new_player_position[0] + 1, new_player_position[1] - 1] in valid_moves:
+            if [new_player_position[0] - 1, new_player_position[1] + 1] in valid_moves:
                 # vai a NE
-                # env.step(4)
+                state,_,_,_ = env.step(4)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE, altrimenti SE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
                     return 0
             else:
                 # vai a SE
-                # env.step(5)
+                state,_,_,_ = env.step(5)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
@@ -256,20 +255,20 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
 
         elif direction[1] == "S":
             # vai a SE (forse muro), altrimenti SW
-            if [new_player_position[0] - 1, new_player_position[1] - 1] in valid_moves:
+            if [new_player_position[0] + 1, new_player_position[1] + 1] in valid_moves:
                 # vai a SE
-                # env.step(5)
+                state,_,_,_ = env.step(5)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE, altrimenti SW
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
                     return 0
             else:
                 # vai a SW
-                # env.step(6)
+                state,_,_,_ = env.step(6)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
@@ -282,20 +281,20 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
         
         elif direction[1] == "W":
             # vai a SW (forse muro), altrimenti NW
-            if [new_player_position[0] - 1, new_player_position[1] + 1] in valid_moves:
+            if [new_player_position[0] + 1, new_player_position[1] - 1] in valid_moves:
                 # vai a SW
-                # env.step(6)
+                state,_,_,_ = env.step(6)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE, altrimenti NW
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
                     return 0
             else:
                 # vai a NW
-                # env.step(7)
+                state,_,_,_ = env.step(7)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
@@ -308,20 +307,20 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
 
         elif direction[1] == "N":
             # vai a NW (forse muro), altrimenti NE
-            if [new_player_position[0] + 1, new_player_position[1] + 1] in valid_moves:
+            if [new_player_position[0] - 1, new_player_position[1] - 1] in valid_moves:
                 # vai a NW
-                # env.step(7)
+                state,_,_,_ = env.step(7)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE, altrimenti NE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
                     return 0
             else:
                 # vai a NE
-                # env.step(4)
+                state,_,_,_ = env.step(4)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
@@ -334,20 +333,19 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
 
         elif direction[1] == "NE":
             # vai a N (forse muro), altrimenti E
-            if [new_player_position[0] + 1, new_player_position[1]] in valid_moves:
-                # vai a N
-                # env.step(0)
-                prev_player_position = new_player_position
-                new_player_position = get_player_location
-                # IF non siamo bloccati FINE, altrimenti E
-                if not is_player_same_position(new_player_position, prev_player_position):
-                    # ricalcolare path migliore
-                    return 0
+            # vai a N
+            state,_,_,_ = env.step(0)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location(state["chars"])
+            # IF non siamo bloccati FINE, altrimenti E
+            if not is_player_same_position(new_player_position, prev_player_position):
+                # ricalcolare path migliore
+                return 0
             else:
                 # vai a E
-                # env.step(1)
+                state,_,_,_ = env.step(1)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
@@ -360,25 +358,24 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
 
         elif direction[1] == "SE":
             # vai a S (forse muro), altrimenti E
-            if [new_player_position[0] - 1, new_player_position[1]] in valid_moves:
-                # vai a S
-                # env.step(2)
-                prev_player_position = new_player_position
-                new_player_position = get_player_location
-                # IF non siamo bloccati FINE, altrimenti E
-                if not is_player_same_position(new_player_position, prev_player_position):
-                    # ricalcolare path migliore
-                    return 0
+            # vai a S
+            state,_,_,_ = env.step(2)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location(state["chars"])
+            # IF non siamo bloccati FINE, altrimenti E
+            if not is_player_same_position(new_player_position, prev_player_position):
+                # ricalcolare path migliore
+                return 0
             else:
                 # vai a E
-                # env.step(1)
+                state,_,_,_ = env.step(1)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
                     return 0
-            
+                
             # non ci siamo spostati
             """
                 CASO DA DECIDERE
@@ -386,25 +383,24 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
 
         elif direction[1] == "SW":
             # vai a S (forse muro), altrimenti W
-            if [new_player_position[0] - 1, new_player_position[1]] in valid_moves:
-                # vai a S
-                # env.step(2)
-                prev_player_position = new_player_position
-                new_player_position = get_player_location
-                # IF non siamo bloccati FINE, altrimenti W
-                if not is_player_same_position(new_player_position, prev_player_position):
-                    # ricalcolare path migliore
-                    return 0
+            # vai a S
+            state,_,_,_ = env.step(2)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location(state["chars"])
+            # IF non siamo bloccati FINE, altrimenti W
+            if not is_player_same_position(new_player_position, prev_player_position):
+                # ricalcolare path migliore
+                return 0
             else:
                 # vai a W
-                # env.step(3)
+                state,_,_,_ = env.step(3)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
                     return 0
-            
+                
             # non ci siamo spostati
             """
                 CASO DA DECIDERE
@@ -412,25 +408,24 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], o
 
         elif direction[1] == "NW":
             # vai a N (forse muro), altrimenti W
-            if [new_player_position[0] + 1, new_player_position[1]] in valid_moves:
-                # vai a N
-                # env.step(0)
-                prev_player_position = new_player_position
-                new_player_position = get_player_location
-                # IF non siamo bloccati FINE, altrimenti W
-                if not is_player_same_position(new_player_position, prev_player_position):
-                    # ricalcolare path migliore
-                    return 0
+            # vai a N
+            state,_,_,_ = env.step(0)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location(state["chars"])
+            # IF non siamo bloccati FINE, altrimenti W
+            if not is_player_same_position(new_player_position, prev_player_position):
+                # ricalcolare path migliore
+                return 0
             else:
                 # vai a W
-                # env.step(3)
+                state,_,_,_ = env.step(3)
                 prev_player_position = new_player_position
-                new_player_position = get_player_location
+                new_player_position = get_player_location(state["chars"])
                 # IF non siamo bloccati FINE
                 if not is_player_same_position(new_player_position, prev_player_position):
                     # ricalcolare path migliore
                     return 0
-            
+                
             # non ci siamo spostati
             """
                 CASO DA DECIDERE
