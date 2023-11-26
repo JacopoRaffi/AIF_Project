@@ -2,81 +2,104 @@ import numpy as np
 
 from collections import deque
 from queue import PriorityQueue
-from utils import get_valid_moves, get_player_location, chebyshev_dist
+from utils import *
 from typing import Tuple, List
 import matplotlib.pyplot as plt
 
 
+
+def print_gamestate(state):
+    """
+    Prints the game state.
+
+    Parameters:
+    state (numpy.ndarray): The game state array.
+
+    Returns:
+    None
+    """
+    plt.imshow(state[100:250, 400:750]) 
+
 def a_star(game : np.ndarray, game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], h: callable) -> List[Tuple[int, int]]:
-    # initialize open and close list
-    open_list = PriorityQueue()
-    close_list = []
-    # additional dict which maintains the nodes in the open list for an easier access and check
-    support_list = {}
+    """
+    A* algorithm implementation to find the shortest path from the start position to the target position on a game map.
 
-    starting_state_g = 0
-    starting_state_h = h(start,target)
-    starting_state_f = starting_state_g + starting_state_h
+    Parameters:
+    - game: numpy.ndarray - The game state.
+    - game_map: numpy.ndarray - The map of the game.
+    - start: Tuple[int, int] - The starting position.
+    - target: Tuple[int, int] - The target position.
+    - h: callable - The heuristic function to estimate the distance between two positions.
 
-    open_list.put((starting_state_f, (start, starting_state_g)))
-    support_list[start] = starting_state_g
-    parent = {start: None}
+    Returns:
+    - List[Tuple[int, int]] - The list of positions representing the shortest path from the start to the target.
+    """
+    count = 0 #Variable needed to keep track of the order of insertion in the priority queue, if two items have the same f score the one with the lower count is inserted first
+    open_set = PriorityQueue()
+    open_set.put((0, count, start)) #f score, count, position
+    came_from = {} #Tracks from which node we reached a node
+    g_scores = {} #Dictionary with the g score of each node
+    f_scores = {} #Dictionary with the f score of each node
 
-    while not open_list.empty():
-        # get the node with lowest f
-        _, (current, current_cost) = open_list.get()
-        # add the node to the close list
-        close_list.append(current)
+    map_positions = get_all_map_positions(game_map) #Get all the positions x,y in the map
+
+    #Set the g and f score of all the nodes to infinity in the dictionary
+    for position in map_positions:
+        g_scores[position] = float("inf")
+        f_scores[position] = float("inf")
+
+    #Scores of the start node
+    g_start = 0 #g score of the start node
+    f_start= h(start, target) #f score of the start node
+    
+    #Dictionary with the g score of each node
+    g_scores[start] = g_start #Insert the g score of the start node in the dictionary
+    f_scores[start] = f_start #Insert the f score of the start node in the dictionary
+ 
+    open_set_hash = {start} #Track all the items in the priority queue, we need this because we can't check if an item directly in the priority queue
+
+    while not open_set.empty():
+        current = open_set.get()[2] #Get the position of the current node, get the item with the lowest f score
+        open_set_hash.remove(current) #Remove the current node from the open set
 
         if current == target:
             print("Target found!")
-            print(current)
-            path = build_path(parent, target, game_map, game)
-
+            path = reconstruct_path(came_from, current) #Reconstruct the path from the start node to the target node
             return path
-
-    
         
-        for neighbor in get_valid_moves(game_map, current, target, close_list):
-            #print(get_valid_moves(game_map, current, target))
-            # check if neighbor in close list, if so continue
-            if neighbor in close_list:
-                continue
-            # compute neighbor g, h and f values
-            neighbor_g = 1 + current_cost
-            neighbor_h = h(neighbor, target)
-            neighbor_f = neighbor_g + neighbor_h
-            parent[neighbor] = current
-            neighbor_entry = (neighbor_f, (neighbor, neighbor_g))
-            # if neighbor in open_list
-            if neighbor in support_list.keys():
-                # if neighbor_g is greater or equal to the one in the open list, continue
-                if neighbor_g >= support_list[neighbor]:
-                    continue
+        for neighbour in get_valid_moves(game_map, current, target): #Neighbours of the current node
             
-            # add neighbor to open list and update support_list
-            if neighbor == target:
-                path = build_path(parent, target, game_map, game)
-                return path
-            open_list.put(neighbor_entry)
-            support_list[neighbor] = neighbor_g
+            temp_g_score = g_scores[current] + 1 #g score of the neighbour calulated as the g score of the current node + 1
 
-    print("Target node not found!")
+            if temp_g_score < g_scores[neighbour]: #if we found a better way to reach this neighbour update the g score
+                came_from[neighbour] = current #Update the node from which we reached the neighbour
+                g_scores[neighbour] = temp_g_score #Update the g score of the neighbour
+                f_scores[neighbour] = temp_g_score + h(neighbour, target) #Update the f score of the neighbour
+
+                if neighbour not in open_set_hash:
+                    count += 1
+                    open_set.put((f_scores[neighbour], count, neighbour)) #Add the neighbour to the open set because it is the best path to reach the target
+                    open_set_hash.add(neighbour)
     return None
 
+def reconstruct_path(came_from, current):
+    """
+    Reconstructs the path from the start node to the current node using the 'came_from' dictionary.
 
-def build_path(parent: dict, target: Tuple[int, int], game_map: np.ndarray, game : np.ndarray) -> List[Tuple[int, int]]:
+    Args:
+        came_from (dict): A dictionary that maps each node to its previous node in the path.
+        current: The current node.
+
+    Returns:
+        list: The reconstructed path from the start node to the current node.
+    """
     path = []
-    while target is not None:
-        path.append(target)
-        agent = get_player_location(game_map)
-        target = parent[target]
-    path.reverse()
-    return path
-
-def print_gamestate(state):
-    plt.imshow(state[100:250, 400:750]) #Immagine ristretta con range [y][x]
-
+    #Follows the path from the end to the start
+    while current in came_from:
+        current = came_from[current] 
+        path.append(current)
+    return path[::-1] #reverse the path
+        
 
 #Trova la minima distanza tra un punto e una serie di punti considerando movimenti diagonali
 def get_min_distance_point_to_points(x, y, list_of_pairs):
@@ -145,5 +168,6 @@ def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,in
         dist = dist_player_boulder + dist_boulder_river[1] #position 1 is just the value
         distances.append((x, y, dist))
 
+    print(distances)
     min_distance = min(distances, key=lambda x: x[2])
     return min_distance[0], min_distance[1]
