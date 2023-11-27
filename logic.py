@@ -483,6 +483,28 @@ def position_for_boulder_push(current_boulder_position: Tuple[int,int], new_boul
 
     return action, coord_map[action_name] #return the position the agent should be given the move the boulder needs to do 
 
+def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], List[Tuple[int,int]]]:
+    """
+        returns the path the agent follows to push a boulder along its(of the boulder) path
+        :param boulder_path: the path the boulder has to follow
+        :return: two lists, one for the actions of the agent and one for the positions the agent should follow
+    """ 
+
+    agent_path = []
+
+    for i in range(len(boulder_path) - 1): 
+        # boulder_path[i] current position of the boulder
+        # boulder_path[i+1] new position of the boulder
+        _,agent_position = position_for_boulder_push(boulder_path[i], boulder_path[i+1]) # get the action and the position the agent should be
+        
+        # append where the agent should be and his new position (it will be the same as the boulder before the move)
+        agent_path.extend([agent_position, boulder_path[i]])
+
+    print(agent_path)
+    agent_actions,names = actions_from_path(agent_path[0], agent_path[1:]) #get the actions the agent should perform to follow the path
+    print(names)
+
+    return agent_actions, agent_path
 
 """
 def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int]) -> int: 
