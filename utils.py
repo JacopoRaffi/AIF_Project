@@ -68,7 +68,7 @@ def is_obstacle(position_element: int, coordinates : Tuple[int,int], target_posi
     """
 
     wall = "|- "
-    river = "}"
+    river = "!" ##Resolve this
 
     if coordinates == target_position:
         return True

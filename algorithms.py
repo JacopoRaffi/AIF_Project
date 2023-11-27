@@ -70,7 +70,7 @@ def a_star(game : np.ndarray, game_map: np.ndarray, start: Tuple[int, int], targ
         for neighbour in get_valid_moves(game_map, current, target): #Neighbours of the current node
             
             temp_g_score = g_scores[current] + 1 #g score of the neighbour calulated as the g score of the current node + 1
-
+            
             if temp_g_score < g_scores[neighbour]: #if we found a better way to reach this neighbour update the g score
                 came_from[neighbour] = current #Update the node from which we reached the neighbour
                 g_scores[neighbour] = temp_g_score #Update the g score of the neighbour
@@ -94,7 +94,7 @@ def reconstruct_path(came_from, current):
         list: The reconstructed path from the start node to the current node.
     """
     path = []
-    #Follows the path from the end to the start
+    #Follows the path from the end to the starta
     while current in came_from:
         current = came_from[current] 
         path.append(current)
@@ -116,11 +116,11 @@ def get_min_distance_point_to_points(x, y, list_of_pairs):
     """
     min_dist = 999999999
     for i in list_of_pairs:
-        dist = chebyshev_dist(x, y, i[0], i[1])
-        if dist < min_dist:
+        dist = get_optimal_distance_point_to_point((x, y), (i[0], i[1]))
+        if dist < min_dist or (dist == min_dist and x == i[0]): #if the distance is the same prefers the one with the same column index
             min_dist = dist
             coordinates = [i[0], i[1]]
-    return coordinates, min_dist
+    return coordinates[0], coordinates[1]
 
 def get_optimal_distance_point_to_point(start: Tuple[int, int], target : Tuple[int,int]) -> int:
     """
