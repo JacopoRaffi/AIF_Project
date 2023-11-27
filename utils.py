@@ -1,3 +1,4 @@
+import gym
 import numpy as np
 import math
 import time
@@ -262,7 +263,7 @@ def chebyshev_dist(x1 : int, y1 : int, x2 : int, y2 : int):
     return max(y_dist, x_dist)
 
 
-def plot_animated_sequence(env ,game: np.ndarray , game_map : np.ndarray, actions : list[int]):
+def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarray, actions : List[int]):
     image = plt.imshow(game[25:300, :475])
     player_positions = []
     for action in actions:
