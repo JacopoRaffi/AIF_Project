@@ -9,23 +9,20 @@ import random
 
 from utils import *
 
-def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], obstacle_position: Tuple[int, int], env: gym.Env) -> int:
+def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], direction: int, env: gym.Env) -> int:
     """
         manage the player stuck by an obstacle (boulder or river)
         :param game_map: the game map as a matrix
         :param player_position: the current position of the agent
-        :param obstacle_position: the position of the obstacle
+        :param direction: the direction the agent is going
+        :param env: the environment of the game
         :return: the result (0 for avoid the boulder, 1 for pass the river, -1 for stuck)
     """
-
-    # get the direction the player is following
-    direction = action_map(player_position, obstacle_position)
     
     prev_player_position = player_position
     new_player_position = player_position
 
     valid_moves = get_valid_moves(game_map, player_position, obstacle_position)
-
 
     # check if the obstacle is a river, else is a boulder
     if game_map[obstacle_position] == ord("}"):
