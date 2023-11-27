@@ -114,13 +114,13 @@ def get_min_distance_point_to_points(x, y, list_of_pairs):
     Returns:
         tuple: A tuple containing the coordinates of the pair with the minimum distance and the minimum distance itself.
     """
-    min_dist = 999999999
+    min_dist = float("inf")
     for i in list_of_pairs:
         dist = get_optimal_distance_point_to_point((x, y), (i[0], i[1]))
         if dist < min_dist or (dist == min_dist and x == i[0]): #if the distance is the same prefers the one with the same column index
             min_dist = dist
             coordinates = [i[0], i[1]]
-    return coordinates[0], coordinates[1]
+    return coordinates, min_dist
 
 def get_optimal_distance_point_to_point(start: Tuple[int, int], target : Tuple[int,int]) -> int:
     """

@@ -489,18 +489,25 @@ def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], L
 
     agent_path = []
 
-    for i in range(len(boulder_path) - 1): 
+    for i in range(len(boulder_path)-1): 
         # boulder_path[i] current position of the boulder
         # boulder_path[i+1] new position of the boulder
         _,agent_position = position_for_boulder_push(boulder_path[i], boulder_path[i+1]) # get the action and the position the agent should be
         
         # append where the agent should be and his new position (it will be the same as the boulder before the move)
-        agent_path.extend([agent_position, boulder_path[i]])
+        print(agent_position, boulder_path[i])
+        if not agent_position == boulder_path[i-1]:
+            agent_path.extend([agent_position, boulder_path[i]])
+        else:
+            agent_path.append(boulder_path[i])
+
 
     print(agent_path)
-    agent_actions,names = actions_from_path(agent_path[0], agent_path[1:]) #get the actions the agent should perform to follow the path
-    print(names)
-
+    if len(agent_path) > 0:
+        agent_actions,names = actions_from_path(agent_path[0], agent_path[1:]) #get the actions the agent should perform to follow the path
+    
+    print(names, "E")
+    agent_actions.append(1) #add action to push to the river
     return agent_actions, agent_path
 
 """
