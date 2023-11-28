@@ -264,13 +264,21 @@ def chebyshev_dist(x1 : int, y1 : int, x2 : int, y2 : int):
 
 
 def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarray, actions : List[int]):
+    rewards = []
     image = plt.imshow(game[25:300, :475])
     player_positions = []
     for action in actions:
-        s, _, _, _ = env.step(action)
+        s, r, _, _ = env.step(action)
+        rewards.append(r)
+        
         display.display(plt.gcf())
         display.clear_output(wait=True)
         image.set_data(s['pixel'][:, :])
         player_positions.append(get_player_location(game_map))
         time.sleep(0.5)
+    print("Rewards: ")
+    for r in rewards:
+        print(r)
+    print("Total reward: ", sum(rewards))
+        
     return player_positions
