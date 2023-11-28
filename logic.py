@@ -459,7 +459,7 @@ def position_for_boulder_push(current_boulder_position: Tuple[int,int], new_boul
     """
         returns the position where the agent should be so to push a block
         :param block_position: the current position of the block
-        :param new_boulder_position: the position where the block needs to be pushed
+        :param new_boulder_position: the position where the block needs to be pushed, given the river path is the second element of it
         :return: the action the agent needs to perform and the position where the agent should be so to move the block
     """
 
@@ -495,7 +495,7 @@ def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], L
         _,agent_position = position_for_boulder_push(boulder_path[i], boulder_path[i+1]) # get the action and the position the agent should be
         
         # append where the agent should be and his new position (it will be the same as the boulder before the move)
-        print(agent_position, boulder_path[i])
+        #print(agent_position, boulder_path[i])
         if not agent_position == boulder_path[i-1]:
             agent_path.extend([agent_position, boulder_path[i]])
         else:
@@ -506,7 +506,7 @@ def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], L
     if len(agent_path) > 0:
         agent_actions,names = actions_from_path(agent_path[0], agent_path[1:]) #get the actions the agent should perform to follow the path
     
-    print(names, "E")
+    #print(names, "E")
     agent_actions.append(1) #add action to push to the river
     return agent_actions, agent_path
 
