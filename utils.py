@@ -4,6 +4,9 @@ import math
 import time
 import matplotlib.pyplot as plt
 import IPython.display as display
+from typing import List
+import os
+from datetime import datetime
 
 
 from typing import Tuple, List
@@ -281,4 +284,46 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
         print(r)
     print("Total reward: ", sum(rewards))
         
+    return player_positions
+
+
+def plot_and_save_sequence(env: gym.Env, game: np.ndarray, game_map: np.ndarray, actions: List[int]):
+    # Create directory if it doesn't exist
+    if not os.path.exists('results'):
+        os.makedirs('results')
+
+    # Create a subdirectory for this test
+    test_id = datetime.now().strftime('%Y%m%d%H%M%S')
+    test_dir = os.path.join('results', test_id)
+    if not os.path.exists(test_dir):
+        os.makedirs(test_dir)
+
+    rewards = []
+    image = plt.imshow(game[25:300, :475])
+    player_positions = []
+
+    for action in actions:
+        s, r, _, _ = env.step(action)
+        rewards.append(r)
+        image.set_data(s['pixel'][:, :])
+        player_positions.append(get_player_location(game_map))
+        time.sleep(0.5)
+
+    # Save the initial and final images
+    plt.imsave(os.path.join(test_dir, 'start_img.png'), game[:, :])
+    plt.imsave(os.path.join(test_dir, 'end_img.png'), s['pixel'][:, :])
+
+    # Write player positions, actions, and rewards to logs.txt
+    with open(os.path.join(test_dir, 'logs.txt'), 'w') as f:
+        f.write("Player Positions:\n")
+        for pos in player_positions:
+            f.write(str(pos) + "\n")
+        f.write("\nActions:\n")
+        for action in actions:
+            f.write(str(action) + "\n")
+        f.write("\nRewards:\n")
+        for reward in rewards:
+            f.write(str(reward) + "\n")
+        f.write("\nTotal Reward: " + str(sum(rewards)))
+
     return player_positions
