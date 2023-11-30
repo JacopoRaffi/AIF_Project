@@ -555,6 +555,23 @@ def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], L
     agent_actions.append(1) #add action to push to the river
     return agent_actions, agent_path
 
+def check_updates(old_map: np.ndarray, new_map: np.ndarray, current_path: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+    """
+        checks if the map has been updated
+        :param old_map: the previous state
+        :param new_map: the new state after the agent's step
+        :return: the new path to follow (iff more convinient), None otherwise
+    """
+
+    # check if there are updates in the map
+    if np.array_equal(old_map, new_map):
+        return None 
+    
+    # TODO check if there is at least one new boulder
+    # TODO check if it's convinient one of this new boulder(s)
+
+    # TODO if no new boulder update the new path to the current target boulder
+
 """
 def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int]) -> int: 
     
