@@ -555,22 +555,33 @@ def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], L
     agent_actions.append(1) #add action to push to the river
     return agent_actions, agent_path
 
-def check_updates(old_map: np.ndarray, new_map: np.ndarray, current_path: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+def check_updates(old_map: np.ndarray, new_map: np.ndarray, current_path: List[Tuple[int, int]], agent_pos: Tuple[int,int], boulder_symbol='`') -> List[Tuple[int, int]]:
     """
         checks if the map has been updated
         :param old_map: the previous state
         :param new_map: the new state after the agent's step
         :return: the new path to follow (iff more convinient), None otherwise
     """
-
+    from algorithms import a_star
     # check if there are updates in the map
     if np.array_equal(old_map, new_map):
         return None 
-    
-    # TODO check if there is at least one new boulder
-    # TODO check if it's convinient one of this new boulder(s)
 
-    # TODO if no new boulder update the new path to the current target boulder
+    target = current_path[-1] #get the current target boulder
+    old_pos = get_boulder_locations(old_map, boulder_symbol)
+    new_pos = get_boulder_locations(new_map, boulder_symbol)
+
+    print("OLD: ", old_pos)
+    print("NEW: ", new_pos)
+
+    new_boulders = [boulder for boulder in new_pos if boulder not in old_pos] #get the new seen boulders
+    print("NEW BOULDERS: ", new_boulders)
+
+    if len(new_boulders) > 0: #if at least a new boulder has been seen
+        possible_new_candidates = []
+
+    new_path = a_star(new_map, agent_pos, target) #get the new path to follow considering as a target the same boulder as before 
+    return new_path
 
 """
 def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int]) -> int: 

@@ -5,7 +5,7 @@ from queue import PriorityQueue
 from utils import *
 from typing import Tuple, List
 import matplotlib.pyplot as plt
-from logic import *
+from logic import position_for_boulder_push, push_boulder_path
 
 
 
