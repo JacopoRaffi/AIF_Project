@@ -287,7 +287,7 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
     return player_positions
 
 
-def plot_and_save_sequence(env: gym.Env, game: np.ndarray, game_map: np.ndarray, actions: List[int]):
+def plot_and_save_sequence(gamestate : dict):
     # Create directory if it doesn't exist
     if not os.path.exists('results'):
         os.makedirs('results')
@@ -299,31 +299,56 @@ def plot_and_save_sequence(env: gym.Env, game: np.ndarray, game_map: np.ndarray,
         os.makedirs(test_dir)
 
     rewards = []
-    image = plt.imshow(game[25:300, :475])
+    image = plt.imshow(gamestate['game'][25:300, :475])
     player_positions = []
 
-    for action in actions:
-        s, r, _, _ = env.step(action)
+    for action in gamestate['actions']:
+        s, r, _, _ = gamestate['env'].step(action)
         rewards.append(r)
         image.set_data(s['pixel'][:, :])
-        player_positions.append(get_player_location(game_map))
+        player_positions.append(get_player_location(gamestate['game_map']))
         time.sleep(0.5)
 
     # Save the initial and final images
-    plt.imsave(os.path.join(test_dir, 'start_img.png'), game[:, :])
+    plt.imsave(os.path.join(test_dir, 'start_img.png'), gamestate['game'][:, :])
     plt.imsave(os.path.join(test_dir, 'end_img.png'), s['pixel'][:, :])
 
     # Write player positions, actions, and rewards to logs.txt
     with open(os.path.join(test_dir, 'logs.txt'), 'w') as f:
+
+        f.write("Agent starting position:\n")
+        f.write(str(gamestate['start']) + "\n\n")
+
+        f.write("Boulders list:\n")
+        f.write(str(gamestate['boulders_list']) + "\n\n")
+
+        f.write("Coordinates min boulder:\n")
+        f.write(str(gamestate['coordinates_min_boulder']) + "\n\n")
+
+        f.write("Final positions:\n")
+        f.write(str(gamestate['final_position']) + "\n\n")
+
+        f.write("River positions:\n")
+        f.write(str(gamestate['river_positions']) + "\n\n")
+
+        f.write("Path player to pushing position:\n")
+        f.write(str(gamestate['path_player_to_pushing_position']) + "\n\n")
+
+        f.write("Path boulder to river:\n")
+        f.write(str(gamestate['path_boulder_river']) + "\n\n")
+
+        f.write("Full path of the agent:\n")
+        f.write(str(gamestate['agent_full_path']) + "\n\n")
+
+        f.write("Actions:\n")
+        f.write(str(gamestate['actions']) + "\n")
+        f.write(str(gamestate['names']) + "\n\n")
+
         f.write("Player Positions:\n")
-        for pos in player_positions:
-            f.write(str(pos) + "\n")
-        f.write("\nActions:\n")
-        for action in actions:
-            f.write(str(action) + "\n")
-        f.write("\nRewards:\n")
-        for reward in rewards:
-            f.write(str(reward) + "\n")
+        f.write(str(player_positions) + "\n\n")
+
+        f.write("Rewards:\n")
+        f.write(str(rewards) + "\n")
         f.write("\nTotal Reward: " + str(sum(rewards)))
 
     return player_positions

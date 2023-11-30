@@ -1,2 +1,6 @@
 minihack/
 minihack_env/
+results/
+.DS_Store
+__pycache__/
+
