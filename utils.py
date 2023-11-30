@@ -266,7 +266,39 @@ def chebyshev_dist(x1 : int, y1 : int, x2 : int, y2 : int):
     return max(y_dist, x_dist)
 
 
+def execute_actions(env: gym.Env ,game: np.ndarray , game_map : np.ndarray, actions : List[int]):
+    """
+    Executes a list of actions in the environment and returns the rewards obtained for each action.
+    Without plotting.
+
+    Parameters:
+    - env (gym.Env): The environment in which the actions will be executed.
+    - game (np.ndarray): The game state.
+    - game_map (np.ndarray): The game map.
+    - actions (List[int]): The list of actions to be executed.
+
+    Returns:
+    - rewards (List[float]): The rewards obtained for each action.
+    """
+    rewards = []
+    for action in actions:
+        s, r, _, _ = env.step(action)
+        rewards.append(r)
+    return rewards
+
 def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarray, actions : List[int]):
+    """
+    Plots an animated sequence of the game environment based on a sequence of actions.
+
+    Args:
+        env (gym.Env): The game environment.
+        game (np.ndarray): The game state.
+        game_map (np.ndarray): The game map.
+        actions (List[int]): The sequence of actions to be performed.
+
+    Returns:
+        List[Tuple[int, int]]: The player positions at each step of the sequence.
+    """
     rewards = []
     image = plt.imshow(game[25:300, :475])
     player_positions = []

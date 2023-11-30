@@ -5,6 +5,7 @@ from queue import PriorityQueue
 from utils import *
 from typing import Tuple, List
 import matplotlib.pyplot as plt
+from logic import *
 
 
 
@@ -171,3 +172,71 @@ def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,in
     print(distances)
     min_distance = min(distances, key=lambda x: x[2])
     return min_distance[0], min_distance[1]
+
+
+def push_one_boulder_into_river(state, env : gym.Env, target=None): 
+    """
+    Pushes one boulder into the river in the game environment.
+
+    Args:
+        state (dict): The current state of the game.
+        env (gym.Env): The game environment.
+        target (tuple, optional): The target position for pushing the boulder. Defaults to None.
+        When specificed the algorithm will push the boulder into the specified river position.
+
+    Returns:
+        tuple: The new target position for pushing the next boulder.
+    """
+    
+    game_map = state['chars']
+    game = state['pixel']
+
+    start = get_player_location(game_map)
+    boulders = get_boulder_locations(game_map)
+
+    #If there is no target means that is the first boulder pushed into the river
+    #then proceed to find the best boulder to push into the river within one of the river positions
+    if target is None:  
+        river_positions = get_river_locations(game_map)
+        coordinates_min_boulder = get_best_global_distance(start, boulders, river_positions)
+        temp = get_min_distance_point_to_points(coordinates_min_boulder[0],coordinates_min_boulder[1], river_positions)
+        final_position = tuple(temp[0])
+    else: #We specific next river position in which we have to drop the boulder
+        coordinates_min_boulder = get_best_global_distance(start, boulders, [target])
+        final_position = target
+
+
+    #Calculating the path from the boulder to the river shortest distance
+    path_boulder_river = a_star(game,game_map, coordinates_min_boulder, final_position, get_optimal_distance_point_to_point)
+    path_boulder_river.append(final_position) 
+
+    #Calculating the position in which the agent have to be in order to push correctly the boulder into the river
+    pushing_position = position_for_boulder_push(coordinates_min_boulder, path_boulder_river[1])[1]
+    
+    #Calculating the path from the player to the pushing position
+    path_player_to_pushing_position = a_star(game,game_map, start, pushing_position, get_optimal_distance_point_to_point)
+
+    #Correcting the path from the player to the pushing position
+    agent_actions,path_player_to_river = push_boulder_path(path_boulder_river)
+
+
+    if(path_player_to_pushing_position is not None):
+        if(path_player_to_river is not None):
+            agent_full_path = path_player_to_pushing_position + path_player_to_river
+        else:
+            agent_full_path = path_player_to_pushing_position
+    else:
+        if(path_player_to_river is not None):
+            agent_full_path = path_player_to_river
+        else:
+            agent_full_path = None
+
+    actions, names = actions_from_path(start, agent_full_path) 
+
+    player_pos = plot_animated_sequence(env,game, game_map,actions[1:]) #Remove first action because it is the start position
+
+    #Computes and return the new target which is the next river position
+    new_target = final_position = (final_position[0], final_position[1])
+    return new_target
+
+
