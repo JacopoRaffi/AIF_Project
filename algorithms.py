@@ -21,7 +21,7 @@ def print_gamestate(state):
     """
     plt.imshow(state[100:250, 400:750]) 
 
-def a_star(game : np.ndarray, game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], h: callable) -> List[Tuple[int, int]]:
+def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], h: callable) -> List[Tuple[int, int]]:
     """
     A* algorithm implementation to find the shortest path from the start position to the target position on a game map.
 
@@ -101,8 +101,6 @@ def reconstruct_path(came_from, current):
         path.append(current)
     return path[::-1] #reverse the path
         
-
-#Trova la minima distanza tra un punto e una serie di punti considerando movimenti diagonali
 def get_min_distance_point_to_points(x, y, list_of_pairs):
     """
     Calculates the minimum distance between a point (x, y) and a list of pairs of coordinates using chebyshev distance.
@@ -142,8 +140,6 @@ def get_optimal_distance_point_to_point(start: Tuple[int, int], target : Tuple[i
 
     return dist
 
-
-
 def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,int]], river_positions : List[Tuple[int,int]]) -> Tuple[int, int]:
     """
     Calculates the best global distance between the start point, boulders, and river positions.
@@ -172,7 +168,6 @@ def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,in
     print(distances)
     min_distance = min(distances, key=lambda x: x[2])
     return min_distance[0], min_distance[1]
-
 
 def push_one_boulder_into_river(state, env : gym.Env, target=None): 
     """
