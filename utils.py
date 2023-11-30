@@ -7,8 +7,6 @@ import IPython.display as display
 from typing import List
 import os
 from datetime import datetime
-
-
 from typing import Tuple, List
 
 
@@ -246,7 +244,6 @@ def manhattan_distance(x1: int, y1: int, x2: int, y2: int):
     """
     return abs(x1 - x2) + abs(y1 - y2)
 
-
 def chebyshev_dist(x1 : int, y1 : int, x2 : int, y2 : int): 
     """
     Calculate the Chebyshev distance between two points (x1, y1) and (x2, y2).
@@ -264,7 +261,6 @@ def chebyshev_dist(x1 : int, y1 : int, x2 : int, y2 : int):
     y_dist = abs(y1 - y2)
     x_dist = abs(x1 - x2)
     return max(y_dist, x_dist)
-
 
 def execute_actions(env: gym.Env ,game: np.ndarray , game_map : np.ndarray, actions : List[int]):
     """
@@ -317,7 +313,6 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
     print("Total reward: ", sum(rewards))
         
     return player_positions
-
 
 def plot_and_save_sequence(gamestate : dict):
     # Create directory if it doesn't exist
