@@ -113,6 +113,7 @@ def get_min_distance_point_to_points(x, y, list_of_pairs):
     Returns:
         tuple: A tuple containing the coordinates of the pair with the minimum distance and the minimum distance itself.
     """
+    coordinates = []
     min_dist = float("inf")
     for i in list_of_pairs:
         dist = get_optimal_distance_point_to_point((x, y), (i[0], i[1]))
@@ -202,14 +203,14 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
 
 
     #Calculating the path from the boulder to the river shortest distance
-    path_boulder_river = a_star(game,game_map, coordinates_min_boulder, final_position, get_optimal_distance_point_to_point)
+    path_boulder_river = a_star(game_map, coordinates_min_boulder, final_position, get_optimal_distance_point_to_point)
     path_boulder_river.append(final_position) 
 
     #Calculating the position in which the agent have to be in order to push correctly the boulder into the river
     pushing_position = position_for_boulder_push(coordinates_min_boulder, path_boulder_river[1])[1]
     
     #Calculating the path from the player to the pushing position
-    path_player_to_pushing_position = a_star(game,game_map, start, pushing_position, get_optimal_distance_point_to_point)
+    path_player_to_pushing_position = a_star(game_map, start, pushing_position, get_optimal_distance_point_to_point)
 
     #Correcting the path from the player to the pushing position
     agent_actions,path_player_to_river = push_boulder_path(path_boulder_river)
