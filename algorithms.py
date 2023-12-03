@@ -234,4 +234,46 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
     new_target = final_position = (final_position[0], final_position[1])
     return new_target
 
+def check_updates(old_map: np.ndarray, new_map: np.ndarray, current_path: List[Tuple[int, int]], agent_pos: Tuple[int,int], river: List[Tuple[int,int]], actual_target: Tuple[int,int]=(-1,-1), boulder_symbol='`') -> List[Tuple[int, int]]:
+    """
+        checks if the map has been updated
+        :param old_map: the previous state
+        :param new_map: the new state after the agent's step
+        :return: the new path to follow (iff there are changes on the state), None otherwise
+    """
+    
+    # check if there are updates in the map
+    if np.array_equal(old_map, new_map):
+        return None 
 
+    target = current_path[-1] #get the current target boulder
+    old_pos = get_boulder_locations(old_map, boulder_symbol)
+    new_pos = get_boulder_locations(new_map, boulder_symbol)
+
+    print("OLD: ", old_pos)
+    print("NEW: ", new_pos)
+
+    new_boulders = [boulder for boulder in new_pos if boulder not in old_pos] #get the new seen boulders
+    print("NEW BOULDERS: ", new_boulders)
+
+    if len(new_boulders) > 0: #if at least a new boulder has been seen
+        new_boulder = get_best_global_distance(new_boulders, agent_pos, river) #get the best boulder to push
+        temp = get_min_distance_point_to_points(new_boulder[0], new_boulder[1], river)
+        river_target = tuple(temp[0])
+        boulder_to_river = a_star(new_map, new_boulder, river_target, get_optimal_distance_point_to_point)
+
+        agent_first_push = position_for_boulder_push(new_boulder, boulder_to_river[1]) # get the first position the agent needs to be to push the boulder
+        
+        agent_to_boulder = a_star(new_map, agent_pos, agent_first_push, get_optimal_distance_point_to_point) #get the new path to follow
+        #TODO final part, return the new path considering that the agent_first_push can be an obstacle
+
+
+    #TODO check if there is a nearer river block
+    if actual_target != (-1,-1): 
+        if not is_obstacle(new_map[actual_target], agent_pos, actual_target):
+            new_path = a_star(new_map, agent_pos, actual_target, get_optimal_distance_point_to_point)
+            return new_path
+        
+    new_path = a_star(new_map, agent_pos, target)
+    
+    return new_path
