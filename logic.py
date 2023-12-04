@@ -551,5 +551,5 @@ def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], L
         agent_actions,names = actions_from_path(agent_path[0], agent_path[1:]) #get the actions the agent should perform to follow the path
     
     #print(names, "E")
-    agent_actions.append(1) #add action to push to the river
+    #agent_actions.append(1) #add action to push to the river
     return agent_actions, agent_path
