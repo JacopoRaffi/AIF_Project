@@ -77,6 +77,47 @@ def is_obstacle(position_element: int, coordinates : Tuple[int,int], target_posi
 
     return chr(position_element) in wall or chr(position_element) == river
 
+def are_less_black_blocks(old_map, new_map):
+    """
+        old_map: the previous state of the game map
+        new_map: the current state of the game map
+        return: True iff the number of black blocks (unseen map) is fewer than the previous state
+    """
+
+    black_block = ord(" ") #integer rapresentation of an unseen block of map
+    tuples = np.where(old_map == black_block)
+    old_black_blocks = list(zip(tuples[0], tuples[1]))
+
+    tuples = np.where(new_map == black_block)
+    new_black_blocks = list(zip(tuples[0], tuples[1]))
+
+    return old_black_blocks != new_black_blocks
+
+def are_less_black_blocks_light(old_number_black_blocks, new_map):
+    """
+        old_number_black_blocks: the previous number of black blocks (unseen blocks)
+        new_map: the current state of the game map
+        return: True iff the number of black blocks (unseen map) is fewer than the previous state
+    """
+
+    black_block = ord(" ") #integer rapresentation of an unseen block of map
+    tuples = np.where(new_map == black_block)
+    new_black_blocks = list(zip(tuples[0], tuples[1]))
+
+    return old_number_black_blocks > len(new_black_blocks)
+
+def get_number_black_blocks(game_map):
+    """
+        game_map: the current state of the game map
+        return: the number of black blocks (unseen map)
+    """
+
+    black_block = ord(" ") #integer rapresentation of an unseen block of map
+    tuples = np.where(game_map == black_block)
+    black_blocks = list(zip(tuples[0], tuples[1]))
+
+    return len(black_blocks)
+
 def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], target_position: Tuple[int,int]) -> List[Tuple[int, int]]:
     """
         gets all the valid moves the player can make from the current position
@@ -176,7 +217,6 @@ def action_map(current_position: Tuple[int, int], new_position: Tuple[int, int])
 
     return action, action_name
 
-#TODO: exploit the action_map function
 def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Tuple[List[int], List[str]]:
     """
         gets all the actions the player has to make to follow a path
@@ -185,52 +225,18 @@ def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Tu
         :return: a list of actions to perform
     """
     
-    action_map = {
-        "N": 0,
-        "E": 1,
-        "S": 2,
-        "W": 3,
-        "NE": 4,
-        "SE": 5,
-        "SW": 6,
-        "NW": 7
-    }
     actions = []
     action_name = []
-    y_s, x_s = start
-    for (y, x) in path:
-        if x_s == x:
-            if y_s > y:
-                actions.append(action_map["N"])
-                action_name.append("N")
-            else: 
-                actions.append(action_map["S"])
-                action_name.append("S") 
-        elif y_s == y:
-            if x_s > x:
-                actions.append(action_map["W"])
-                action_name.append("W") 
-            else: 
-                actions.append(action_map["E"])
-                action_name.append("E") 
-        elif x_s < x:
-            if y_s > y:
-                actions.append(action_map["NE"])
-                action_name.append("NE")    
-            else: 
-                actions.append(action_map["SE"])
-                action_name.append("SE")    
-        elif x_s > x:
-            if y_s > y:
-                actions.append(action_map["NW"])
-                action_name.append("NW")    
-            else: 
-                actions.append(action_map["SW"])
-                action_name.append("SW")    
-        x_s = x
-        y_s = y
-        
-        
+    i_s, j_s = start
+    for (i, j) in path:
+        action, name = action_map((i_s, j_s), (i,j))
+
+        actions.append(action)
+        action_name.append(name)
+
+        i_s = i
+        j_s = j
+    
     
     return actions, action_name
 
