@@ -21,15 +21,13 @@ def print_gamestate(state):
     """
     plt.imshow(state[100:250, 400:750]) 
 
-def a_star(game_map: np.ndarray, start: Tuple[int, int], river_positions:  List[Tuple[int,int]], target: Tuple[int, int], hasBoulder: bool, h: callable) -> List[Tuple[int, int]]:
+def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], h: callable) -> List[Tuple[int, int]]:
     """
     A* algorithm implementation to find the shortest path from the start position to the target position on a game map.
 
     Parameters:
-    - game: numpy.ndarray - The game state.
     - game_map: numpy.ndarray - The map of the game.
     - start: Tuple[int, int] - The starting position.
-    - river_positions: List[Tuple[int,int]] - The list of river positions.
     - target: Tuple[int, int] - The target position.
     - h: callable - The heuristic function to estimate the distance between two positions.
 
@@ -172,7 +170,7 @@ def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,in
     min_distance = min(distances, key=lambda x: x[2])
     return min_distance[0], min_distance[1]
 
-def push_one_boulder_into_river(state, env : gym.Env, target=None, hasBoulder=False): 
+def push_one_boulder_into_river(state, env : gym.Env, target=None): 
     """
     Pushes one boulder into the river in the game environment.
 
@@ -205,7 +203,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None, hasBoulder=Fa
 
 
     #Calculating the path from the boulder to the river shortest distance
-    path_boulder_river = a_star(game_map, coordinates_min_boulder, river_positions,final_position, hasBoulder,get_optimal_distance_point_to_point)
+    path_boulder_river = a_star(game_map, coordinates_min_boulder,final_position, get_optimal_distance_point_to_point)
     path_boulder_river.append(final_position) 
 
     #Calculating the position in which the agent have to be in order to push correctly the boulder into the river
@@ -213,7 +211,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None, hasBoulder=Fa
     
 
     #Calculating the path from the player to the pushing position
-    path_player_to_pushing_position = a_star(game_map, start, river_positions, pushing_position, hasBoulder,get_optimal_distance_point_to_point)
+    path_player_to_pushing_position = a_star(game_map, start,  pushing_position, get_optimal_distance_point_to_point)
 
     #Correcting the path from the player to the pushing position
     agent_actions,path_player_to_river = push_boulder_path(path_boulder_river)
@@ -249,11 +247,11 @@ def check_better_path(new_map, river, current_target, actual_target=(-1,-1)):
 
     if actual_target != (-1,-1):
         if not is_obstacle(new_map[actual_target], get_player_location(new_map), actual_target):
-            new_path = a_star(new_map, get_player_location(new_map), river, actual_target, False, get_optimal_distance_point_to_point)
+            new_path = a_star(new_map, get_player_location(new_map),  actual_target, get_optimal_distance_point_to_point)
             
             return new_path
     
-    new_path = a_star(new_map, get_player_location(new_map), river, river, current_target, False, get_optimal_distance_point_to_point)
+    new_path = a_star(new_map, get_player_location(new_map), current_target,  get_optimal_distance_point_to_point)
     return new_path
 
 def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulder_symbol='`'):
@@ -286,11 +284,11 @@ def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulde
         agent_first_push = position_for_boulder_push(new_boulder, boulder_to_river[1]) # get the first position the agent needs to be to push the boulder
 
         if not is_obstacle(new_map[agent_first_push], agent_pos, agent_first_push): #if the agent_first_push is not an obstacle
-            agent_to_boulder = a_star(new_map, agent_pos, river, agent_first_push, False, get_optimal_distance_point_to_point) #get the new path to follow 
+            agent_to_boulder = a_star(new_map, agent_pos,  agent_first_push,  get_optimal_distance_point_to_point) #get the new path to follow 
             actual_target = agent_pos
 
         else:
-            agent_to_boulder = a_star(new_map, agent_pos, river, new_boulder, False, get_optimal_distance_point_to_point) #get the new path to follow
+            agent_to_boulder = a_star(new_map, agent_pos,  new_boulder, get_optimal_distance_point_to_point) #get the new path to follow
             actual_target = None
 
         return agent_to_boulder, actual_target

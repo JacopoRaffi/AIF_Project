@@ -70,7 +70,7 @@ def is_obstacle(position_element: int, coordinates : Tuple[int,int], target_posi
     """
 
     wall = "|- "
-    river = "!" ##Resolve this
+    river = "!" 
 
     if coordinates == target_position:
         return True
@@ -82,19 +82,24 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], tar
         gets all the valid moves the player can make from the current position
         :param game_map: the game map as a matrix
         :param current_position: the current position of the agent
+        :param target_position: the target position of the agent
+        :param hasBoulder: if the agent has a boulder
         :return: a list of valid moves  
     """
 
     x_limit, y_limit = game_map.shape
     valid = []
     x, y = current_position    
+    river = "}" 
     
     # North valid move
     if y - 1 > 0 and not is_obstacle(game_map[x, y-1],current_position, target_position):
         valid.append((x, y-1)) 
+    
     # East valid move
     if x + 1 < x_limit and not is_obstacle(game_map[x+1, y], current_position, target_position):
         valid.append((x+1, y)) 
+        
     # South valid move
     if y + 1 < y_limit and not is_obstacle(game_map[x, y+1], current_position,target_position):
         valid.append((x, y+1)) 
@@ -102,16 +107,17 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], tar
     if x - 1 > 0 and not is_obstacle(game_map[x-1, y], current_position,target_position):
         valid.append((x-1, y))
     # North-East valid move
-    if x + 1 < x_limit and y - 1 > 0 and not is_obstacle(game_map[x+1, y-1], current_position,target_position): 
+    if x + 1 < x_limit and y - 1 > 0 and not is_obstacle(game_map[x+1, y-1], current_position,target_position):
         valid.append((x+1, y-1))
     # South-East valid move
-    if x + 1 < x_limit and y + 1 < y_limit and not is_obstacle(game_map[x+1, y+1], current_position,target_position): 
+    if x + 1 < x_limit and y + 1 < y_limit and not is_obstacle(game_map[x+1, y+1], current_position,target_position):
         valid.append((x+1, y+1))
+         
     # South-West valid move
-    if x - 1 > 0 and y + 1 < y_limit and not is_obstacle(game_map[x-1, y+1], current_position, target_position): 
+    if x - 1 > 0 and y + 1 < y_limit and not is_obstacle(game_map[x-1, y+1], current_position, target_position):
         valid.append((x-1, y+1))
     # North-West valid move
-    if x - 1 > 0 and y - 1 > 0 and not is_obstacle(game_map[x-1, y-1], current_position,target_position): 
+    if x - 1 > 0 and y - 1 > 0 and not is_obstacle(game_map[x-1, y-1], current_position,target_position):
         valid.append((x-1, y-1))
 
     return valid
@@ -170,6 +176,7 @@ def action_map(current_position: Tuple[int, int], new_position: Tuple[int, int])
 
     return action, action_name
 
+#TODO: exploit the action_map function
 def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Tuple[List[int], List[str]]:
     """
         gets all the actions the player has to make to follow a path
@@ -178,18 +185,53 @@ def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Tu
         :return: a list of actions to perform
     """
     
+    action_map = {
+        "N": 0,
+        "E": 1,
+        "S": 2,
+        "W": 3,
+        "NE": 4,
+        "SE": 5,
+        "SW": 6,
+        "NW": 7
+    }
     actions = []
     action_name = []
-    i_s, j_s = start
-    for (i, j) in path:
-        action, name = action_map((i_s, j_s), (i, j))
+    y_s, x_s = start
+    for (y, x) in path:
+        if x_s == x:
+            if y_s > y:
+                actions.append(action_map["N"])
+                action_name.append("N")
+            else: 
+                actions.append(action_map["S"])
+                action_name.append("S") 
+        elif y_s == y:
+            if x_s > x:
+                actions.append(action_map["W"])
+                action_name.append("W") 
+            else: 
+                actions.append(action_map["E"])
+                action_name.append("E") 
+        elif x_s < x:
+            if y_s > y:
+                actions.append(action_map["NE"])
+                action_name.append("NE")    
+            else: 
+                actions.append(action_map["SE"])
+                action_name.append("SE")    
+        elif x_s > x:
+            if y_s > y:
+                actions.append(action_map["NW"])
+                action_name.append("NW")    
+            else: 
+                actions.append(action_map["SW"])
+                action_name.append("SW")    
+        x_s = x
+        y_s = y
         
-        actions.append(action)
-        action_name.append(name)    
         
-        i_s = i
-        j_s = j
-        
+    
     return actions, action_name
 
 def manhattan_distance(x1: int, y1: int, x2: int, y2: int):
