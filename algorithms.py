@@ -236,7 +236,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
     new_target = final_position = (final_position[0], final_position[1])
     return new_target
 
-def check_better_path(new_map, river, current_target, actual_target=(-1,-1)):
+def check_better_path(new_map, river, current_target, actual_target=None):
     """
         checks if there is a better path to follow after a change of state of the map
         :param new_map: the new state after the agent's step
@@ -245,7 +245,7 @@ def check_better_path(new_map, river, current_target, actual_target=(-1,-1)):
         :return: the new path to follow
     """
 
-    if actual_target != (-1,-1):
+    if actual_target != None:
         if not is_obstacle(new_map[actual_target], get_player_location(new_map), actual_target):
             new_path = a_star(new_map, get_player_location(new_map),  actual_target, get_optimal_distance_point_to_point)
             
