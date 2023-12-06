@@ -63,7 +63,6 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
         open_set_hash.remove(current) #Remove the current node from the open set
 
         if current == target:
-            print("Target found!")
             path = reconstruct_path(came_from, current) #Reconstruct the path from the start node to the target node
             return path
         
@@ -94,7 +93,7 @@ def reconstruct_path(came_from, current):
     Returns:
         list: The reconstructed path from the start node to the current node.
     """
-    path = []
+    path = [current]
     #Follows the path from the end to the starta
     while current in came_from:
         current = came_from[current] 
@@ -120,7 +119,7 @@ def get_min_distance_point_to_points(x, y, list_of_pairs):
         if dist < min_dist or (dist == min_dist and x == i[0]): #if the distance is the same prefers the one with the same column index
             min_dist = dist
             coordinates = [i[0], i[1]]
-    return coordinates, min_dist
+    return tuple(coordinates), min_dist
 
 def get_optimal_distance_point_to_point(start: Tuple[int, int], target : Tuple[int,int]) -> int:
     """
@@ -166,7 +165,6 @@ def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,in
         dist = dist_player_boulder + dist_boulder_river[1] #position 1 is just the value
         distances.append((x, y, dist))
 
-    print(distances)
     min_distance = min(distances, key=lambda x: x[2])
     return min_distance[0], min_distance[1]
 '''
@@ -237,7 +235,6 @@ def push_one_boulder_into_river_OLD(state, env : gym.Env, target=None):
     return new_target
 '''
 
-
 def push_one_boulder_into_river(state, env : gym.Env, target=None): 
     """
     Pushes one boulder into the river in the game environment.
@@ -296,9 +293,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
 
     online_a_star(start, agent_full_path, env, game_map, coordinates_min_boulder) #Start to walk and recompute the path if needed
     
-
-
-def check_better_path(new_map, river, current_target, actual_target=None):
+def check_better_path(new_map, current_target, actual_target=None):
     """
         checks if there is a better path to follow after a change of state of the map
         :param new_map: the new state after the agent's step
@@ -307,13 +302,12 @@ def check_better_path(new_map, river, current_target, actual_target=None):
         :return: the new path to follow
     """
 
-    if actual_target != None:
+    if actual_target is not None:
         if not is_obstacle(new_map[actual_target], get_player_location(new_map), actual_target):
-            new_path = a_star(new_map, get_player_location(new_map),  actual_target, get_optimal_distance_point_to_point)
-            
+            new_path = a_star(new_map, get_player_location(new_map), actual_target, False, get_optimal_distance_point_to_point)
             return new_path
     
-    new_path = a_star(new_map, get_player_location(new_map), current_target,  get_optimal_distance_point_to_point)
+    new_path = a_star(new_map, get_player_location(new_map), current_target, False, get_optimal_distance_point_to_point)
     return new_path
 
 def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulder_symbol='`'):
@@ -323,40 +317,40 @@ def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulde
         :param new_map: the new state after the agent's step
         :param agent_pos: the position of the agent
         :param river: the positions of the river water blocks
-        :return: the new path to follow (iff there are changes on the state) and the actual target for the first push of the boulder
-                 None,None means do nothing new
+        :return: the new path to follow (iff there are changes on the state) and the actual target for the first push of the boulder and
+                the best new boulder to push
+                path, None means that the final element of the path is the actual target 
+                None,None means do nothing new
     """
 
     old_pos = get_boulder_locations(old_map, boulder_symbol)
     new_pos = get_boulder_locations(new_map, boulder_symbol)
 
-    print("OLD: ", old_pos)
-    print("NEW: ", new_pos)
-
     if old_pos != new_pos: #if there is at least one new boulder seen by the agent after the step 
-        new_boulder = get_best_global_distance(new_pos, agent_pos, river)
-
+        new_boulder = get_best_global_distance(agent_pos, new_pos, river)
+       
         if new_boulder == current_boulder: #if the new boulder is the same as the current one
-            return None, None
+            return None, None, current_boulder
 
         temp = get_min_distance_point_to_points(new_boulder[0], new_boulder[1], river)
         river_target = tuple(temp[0])
-        boulder_to_river = a_star(new_map, new_boulder, river_target, get_optimal_distance_point_to_point)
+        boulder_to_river = a_star(new_map, new_boulder, river_target, False, get_optimal_distance_point_to_point)
 
-        agent_first_push = position_for_boulder_push(new_boulder, boulder_to_river[1]) # get the first position the agent needs to be to push the boulder
+        _,agent_first_push = position_for_boulder_push(new_boulder, boulder_to_river[1]) # get the first position the agent needs to be to push the boulder
 
         if not is_obstacle(new_map[agent_first_push], agent_pos, agent_first_push): #if the agent_first_push is not an obstacle
-            agent_to_boulder = a_star(new_map, agent_pos,  agent_first_push,  get_optimal_distance_point_to_point) #get the new path to follow 
-            actual_target = agent_pos
+            agent_to_boulder = a_star(new_map, agent_pos,  agent_first_push, False, get_optimal_distance_point_to_point) #get the new path to follow 
+            actual_target = agent_first_push
 
         else:
-            agent_to_boulder = a_star(new_map, agent_pos,  new_boulder, get_optimal_distance_point_to_point) #get the new path to follow
+            agent_to_boulder = a_star(new_map, agent_pos,  new_boulder, False, get_optimal_distance_point_to_point) #get the new path to follow
+            agent_to_boulder = agent_to_boulder[:-1]
             actual_target = None
 
-        return agent_to_boulder, actual_target
+        return agent_to_boulder, actual_target, new_boulder
     
     else:
-        return None, None
+        return None, None, current_boulder
     
 def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, current_boulder : Tuple[int,int], boulder_symbol='`'):
 
