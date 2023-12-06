@@ -4,8 +4,9 @@ import math
 import time
 import matplotlib.pyplot as plt
 import IPython.display as display
-
-
+from typing import List
+import os
+from datetime import datetime
 from typing import Tuple, List
 
 
@@ -69,31 +70,81 @@ def is_obstacle(position_element: int, coordinates : Tuple[int,int], target_posi
     """
 
     wall = "|- "
-    river = "!" ##Resolve this
+    river = "!" 
 
     if coordinates == target_position:
         return True
 
     return chr(position_element) in wall or chr(position_element) == river
 
-def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], target_position: Tuple[int,int]) -> List[Tuple[int, int]]:
+def are_less_black_blocks(old_map, new_map):
+    """
+        old_map: the previous state of the game map
+        new_map: the current state of the game map
+        return: True iff the number of black blocks (unseen map) is fewer than the previous state
+    """
+
+    black_block = ord(" ") #integer rapresentation of an unseen block of map
+    tuples = np.where(old_map == black_block)
+    old_black_blocks = list(zip(tuples[0], tuples[1]))
+
+    tuples = np.where(new_map == black_block)
+    new_black_blocks = list(zip(tuples[0], tuples[1]))
+
+    return old_black_blocks != new_black_blocks
+
+def are_less_black_blocks_light(old_number_black_blocks, new_map):
+    """
+        old_number_black_blocks: the previous number of black blocks (unseen blocks)
+        new_map: the current state of the game map
+        return: True iff the number of black blocks (unseen map) is fewer than the previous state
+    """
+
+    black_block = ord(" ") #integer rapresentation of an unseen block of map
+    tuples = np.where(new_map == black_block)
+    new_black_blocks = list(zip(tuples[0], tuples[1]))
+
+    return old_number_black_blocks > len(new_black_blocks)
+
+def get_number_black_blocks(game_map):
+    """
+        game_map: the current state of the game map
+        return: the number of black blocks (unseen map)
+    """
+
+    black_block = ord(" ") #integer rapresentation of an unseen block of map
+    tuples = np.where(game_map == black_block)
+    black_blocks = list(zip(tuples[0], tuples[1]))
+
+    return len(black_blocks)
+
+def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], target_position: Tuple[int,int],hasBoulder:bool) -> List[Tuple[int, int]]:
     """
         gets all the valid moves the player can make from the current position
         :param game_map: the game map as a matrix
         :param current_position: the current position of the agent
+        :param target_position: the target position of the agent
+        :param hasBoulder: if the agent has a boulder
         :return: a list of valid moves  
     """
 
     x_limit, y_limit = game_map.shape
     valid = []
-    x, y = current_position    
+    x, y = current_position   
+    river = "}" 
+   
     
     # North valid move
     if y - 1 > 0 and not is_obstacle(game_map[x, y-1],current_position, target_position):
         valid.append((x, y-1)) 
+    
     # East valid move
     if x + 1 < x_limit and not is_obstacle(game_map[x+1, y], current_position, target_position):
-        valid.append((x+1, y)) 
+        if not hasBoulder and not chr(game_map[x+1, y]) == river:
+            valid.append((x+1, y))
+        elif hasBoulder:
+            valid.append((x+1, y)) 
+        
     # South valid move
     if y + 1 < y_limit and not is_obstacle(game_map[x, y+1], current_position,target_position):
         valid.append((x, y+1)) 
@@ -101,16 +152,24 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], tar
     if x - 1 > 0 and not is_obstacle(game_map[x-1, y], current_position,target_position):
         valid.append((x-1, y))
     # North-East valid move
-    if x + 1 < x_limit and y - 1 > 0 and not is_obstacle(game_map[x+1, y-1], current_position,target_position): 
-        valid.append((x+1, y-1))
+    if x + 1 < x_limit and y - 1 > 0 and not is_obstacle(game_map[x+1, y-1], current_position,target_position):
+        if not hasBoulder and not chr(game_map[x+1, y-1]) == river:
+            valid.append((x+1, y-1))
+        elif hasBoulder:
+            valid.append((x+1, y-1))
     # South-East valid move
-    if x + 1 < x_limit and y + 1 < y_limit and not is_obstacle(game_map[x+1, y+1], current_position,target_position): 
-        valid.append((x+1, y+1))
+    if x + 1 < x_limit and y + 1 < y_limit and not is_obstacle(game_map[x+1, y+1], current_position,target_position):
+        if not hasBoulder and not chr(game_map[x+1, y+1]) == river:
+            valid.append((x+1, y+1))
+        elif hasBoulder:
+            valid.append((x+1, y+1))
+
+         
     # South-West valid move
-    if x - 1 > 0 and y + 1 < y_limit and not is_obstacle(game_map[x-1, y+1], current_position, target_position): 
+    if x - 1 > 0 and y + 1 < y_limit and not is_obstacle(game_map[x-1, y+1], current_position, target_position):
         valid.append((x-1, y+1))
     # North-West valid move
-    if x - 1 > 0 and y - 1 > 0 and not is_obstacle(game_map[x-1, y-1], current_position,target_position): 
+    if x - 1 > 0 and y - 1 > 0 and not is_obstacle(game_map[x-1, y-1], current_position,target_position):
         valid.append((x-1, y-1))
 
     return valid
@@ -169,7 +228,6 @@ def action_map(current_position: Tuple[int, int], new_position: Tuple[int, int])
 
     return action, action_name
 
-#TODO: exploit the action_map function
 def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Tuple[List[int], List[str]]:
     """
         gets all the actions the player has to make to follow a path
@@ -178,52 +236,18 @@ def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> Tu
         :return: a list of actions to perform
     """
     
-    action_map = {
-        "N": 0,
-        "E": 1,
-        "S": 2,
-        "W": 3,
-        "NE": 4,
-        "SE": 5,
-        "SW": 6,
-        "NW": 7
-    }
     actions = []
     action_name = []
-    y_s, x_s = start
-    for (y, x) in path:
-        if x_s == x:
-            if y_s > y:
-                actions.append(action_map["N"])
-                action_name.append("N")
-            else: 
-                actions.append(action_map["S"])
-                action_name.append("S") 
-        elif y_s == y:
-            if x_s > x:
-                actions.append(action_map["W"])
-                action_name.append("W") 
-            else: 
-                actions.append(action_map["E"])
-                action_name.append("E") 
-        elif x_s < x:
-            if y_s > y:
-                actions.append(action_map["NE"])
-                action_name.append("NE")    
-            else: 
-                actions.append(action_map["SE"])
-                action_name.append("SE")    
-        elif x_s > x:
-            if y_s > y:
-                actions.append(action_map["NW"])
-                action_name.append("NW")    
-            else: 
-                actions.append(action_map["SW"])
-                action_name.append("SW")    
-        x_s = x
-        y_s = y
-        
-        
+    i_s, j_s = start
+    for (i, j) in path:
+        action, name = action_map((i_s, j_s), (i,j))
+
+        actions.append(action)
+        action_name.append(name)
+
+        i_s = i
+        j_s = j
+    
     
     return actions, action_name
 
@@ -243,7 +267,6 @@ def manhattan_distance(x1: int, y1: int, x2: int, y2: int):
     """
     return abs(x1 - x2) + abs(y1 - y2)
 
-
 def chebyshev_dist(x1 : int, y1 : int, x2 : int, y2 : int): 
     """
     Calculate the Chebyshev distance between two points (x1, y1) and (x2, y2).
@@ -262,8 +285,39 @@ def chebyshev_dist(x1 : int, y1 : int, x2 : int, y2 : int):
     x_dist = abs(x1 - x2)
     return max(y_dist, x_dist)
 
+def execute_actions(env: gym.Env ,game: np.ndarray , game_map : np.ndarray, actions : List[int]):
+    """
+    Executes a list of actions in the environment and returns the rewards obtained for each action.
+    Without plotting.
+
+    Parameters:
+    - env (gym.Env): The environment in which the actions will be executed.
+    - game (np.ndarray): The game state.
+    - game_map (np.ndarray): The game map.
+    - actions (List[int]): The list of actions to be executed.
+
+    Returns:
+    - rewards (List[float]): The rewards obtained for each action.
+    """
+    rewards = []
+    for action in actions:
+        s, r, _, _ = env.step(action)
+        rewards.append(r)
+    return rewards
 
 def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarray, actions : List[int]):
+    """
+    Plots an animated sequence of the game environment based on a sequence of actions.
+
+    Args:
+        env (gym.Env): The game environment.
+        game (np.ndarray): The game state.
+        game_map (np.ndarray): The game map.
+        actions (List[int]): The sequence of actions to be performed.
+
+    Returns:
+        List[Tuple[int, int]]: The player positions at each step of the sequence.
+    """
     rewards = []
     image = plt.imshow(game[25:300, :475])
     player_positions = []
@@ -281,4 +335,70 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
         print(r)
     print("Total reward: ", sum(rewards))
         
+    return player_positions
+
+def plot_and_save_sequence(gamestate : dict):
+    # Create directory if it doesn't exist
+    if not os.path.exists('results'):
+        os.makedirs('results')
+
+    # Create a subdirectory for this test
+    test_id = datetime.now().strftime('%Y%m%d%H%M%S')
+    test_dir = os.path.join('results', test_id)
+    if not os.path.exists(test_dir):
+        os.makedirs(test_dir)
+
+    rewards = []
+    image = plt.imshow(gamestate['game'][25:300, :475])
+    player_positions = []
+
+    for action in gamestate['actions']:
+        s, r, _, _ = gamestate['env'].step(action)
+        rewards.append(r)
+        image.set_data(s['pixel'][:, :])
+        player_positions.append(get_player_location(gamestate['game_map']))
+        time.sleep(0.5)
+
+    # Save the initial and final images
+    plt.imsave(os.path.join(test_dir, 'start_img.png'), gamestate['game'][:, :])
+    plt.imsave(os.path.join(test_dir, 'end_img.png'), s['pixel'][:, :])
+
+    # Write player positions, actions, and rewards to logs.txt
+    with open(os.path.join(test_dir, 'logs.txt'), 'w') as f:
+
+        f.write("Agent starting position:\n")
+        f.write(str(gamestate['start']) + "\n\n")
+
+        f.write("Boulders list:\n")
+        f.write(str(gamestate['boulders_list']) + "\n\n")
+
+        f.write("Coordinates min boulder:\n")
+        f.write(str(gamestate['coordinates_min_boulder']) + "\n\n")
+
+        f.write("Final positions:\n")
+        f.write(str(gamestate['final_position']) + "\n\n")
+
+        f.write("River positions:\n")
+        f.write(str(gamestate['river_positions']) + "\n\n")
+
+        f.write("Path player to pushing position:\n")
+        f.write(str(gamestate['path_player_to_pushing_position']) + "\n\n")
+
+        f.write("Path boulder to river:\n")
+        f.write(str(gamestate['path_boulder_river']) + "\n\n")
+
+        f.write("Full path of the agent:\n")
+        f.write(str(gamestate['agent_full_path']) + "\n\n")
+
+        f.write("Actions:\n")
+        f.write(str(gamestate['actions']) + "\n")
+        f.write(str(gamestate['names']) + "\n\n")
+
+        f.write("Player Positions:\n")
+        f.write(str(player_positions) + "\n\n")
+
+        f.write("Rewards:\n")
+        f.write(str(rewards) + "\n")
+        f.write("\nTotal Reward: " + str(sum(rewards)))
+
     return player_positions
