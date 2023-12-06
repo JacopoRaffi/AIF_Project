@@ -294,8 +294,8 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
         else:
             agent_full_path = None
 
-    online_a_star(start, agent_full_path, env) #Start to walk and recompute the path if needed
-
+    online_a_star(start, agent_full_path, env, game_map, coordinates_min_boulder) #Start to walk and recompute the path if needed
+    
 
 
 def check_better_path(new_map, river, current_target, actual_target=None):
@@ -358,17 +358,38 @@ def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulde
     else:
         return None, None
     
-def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env):
+def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, current_boulder : Tuple[int,int], boulder_symbol='`'):
+
+    old_map = new_map = game_map #Initialize the old and new map with the current game map
 
     while len(path) > 0:
+        old_map = new_map #Map at timestep t-1
         actions, names= actions_from_path(start, path) #Get the actions to follow the path
-        env.step(actions[0]) #Execute the first action
+        observation, reward, done, info = env.step(actions[0]) #Execute the first action
+        new_map = observation['chars'] #Update the new map after the step
 
+        if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
+            newpath, true_pushing_position = push_new_boulder(old_map, new_map, start, get_river_locations(new_map), current_boulder)
+
+            if(newpath == None): #The boulder to push is the same as before
+                path_temp = check_better_path(new_map, get_river_locations(new_map), true_pushing_position, actual_target=true_pushing_position)
+
+                if(len(path) > len(path_temp)): #i found a shorter path
+                    path = path_temp 
+                else:
+                    path = path[1:]
+                    continue
+            else: #The boulder to push has changed
+                path = newpath
+                continue
+        
+        path = path[1:] #Remove the first action because it has already been executed
         '''
         if(player è bloccato) 
             avoid_obstacle()
             path = a_star(…)
-
+        '''
+        '''
         if(vedo nuove caselle nere) 
             new_path, true_pushing_position = push_new_boulder(…) #new path ha il boulder da pushare
             
