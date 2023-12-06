@@ -21,7 +21,7 @@ def print_gamestate(state):
     """
     plt.imshow(state[100:250, 400:750]) 
 
-def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], h: callable) -> List[Tuple[int, int]]:
+def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],hasBoulder:bool, h: callable) -> List[Tuple[int, int]]:
     """
     A* algorithm implementation to find the shortest path from the start position to the target position on a game map.
 
@@ -67,7 +67,7 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
             path = reconstruct_path(came_from, current) #Reconstruct the path from the start node to the target node
             return path
         
-        for neighbour in get_valid_moves(game_map, current, target): #Neighbours of the current node
+        for neighbour in get_valid_moves(game_map, current, target,hasBoulder): #Neighbours of the current node
 
             temp_g_score = g_scores[current] + 1 #g score of the neighbour calulated as the g score of the current node + 1
             

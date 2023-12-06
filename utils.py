@@ -118,7 +118,7 @@ def get_number_black_blocks(game_map):
 
     return len(black_blocks)
 
-def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], target_position: Tuple[int,int]) -> List[Tuple[int, int]]:
+def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], target_position: Tuple[int,int],hasBoulder:bool) -> List[Tuple[int, int]]:
     """
         gets all the valid moves the player can make from the current position
         :param game_map: the game map as a matrix
@@ -130,8 +130,9 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], tar
 
     x_limit, y_limit = game_map.shape
     valid = []
-    x, y = current_position    
+    x, y = current_position   
     river = "}" 
+   
     
     # North valid move
     if y - 1 > 0 and not is_obstacle(game_map[x, y-1],current_position, target_position):
@@ -139,7 +140,10 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], tar
     
     # East valid move
     if x + 1 < x_limit and not is_obstacle(game_map[x+1, y], current_position, target_position):
-        valid.append((x+1, y)) 
+        if not hasBoulder and not chr(game_map[x+1, y]) == river:
+            valid.append((x+1, y))
+        elif hasBoulder:
+            valid.append((x+1, y)) 
         
     # South valid move
     if y + 1 < y_limit and not is_obstacle(game_map[x, y+1], current_position,target_position):
@@ -149,10 +153,17 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int], tar
         valid.append((x-1, y))
     # North-East valid move
     if x + 1 < x_limit and y - 1 > 0 and not is_obstacle(game_map[x+1, y-1], current_position,target_position):
-        valid.append((x+1, y-1))
+        if not hasBoulder and not chr(game_map[x+1, y-1]) == river:
+            valid.append((x+1, y-1))
+        elif hasBoulder:
+            valid.append((x+1, y-1))
     # South-East valid move
     if x + 1 < x_limit and y + 1 < y_limit and not is_obstacle(game_map[x+1, y+1], current_position,target_position):
-        valid.append((x+1, y+1))
+        if not hasBoulder and not chr(game_map[x+1, y+1]) == river:
+            valid.append((x+1, y+1))
+        elif hasBoulder:
+            valid.append((x+1, y+1))
+
          
     # South-West valid move
     if x - 1 > 0 and y + 1 < y_limit and not is_obstacle(game_map[x-1, y+1], current_position, target_position):
