@@ -23,7 +23,7 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], d
     prev_player_position = player_position
     new_player_position = player_position
 
-    valid_moves = get_valid_moves(game_map, player_position, obstacle_position)
+    valid_moves = get_valid_moves(game_map, player_position, obstacle_position, True)
 
     # check if the obstacle is a river, else is a boulder
     if game_map[obstacle_position] == ord("}"):
@@ -154,6 +154,7 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], d
             prev_player_position = new_player_position
             new_player_position = get_player_location(state["chars"])
 
+            valid_moves = get_valid_moves(state["chars"], new_player_position, obstacle_position, True)
             # bisogna spostare il masso di una casella e ricalcolare il path
             if (new_player_position[0] - 1, new_player_position[1] + 1) in valid_moves and (new_player_position[0] + 1, new_player_position[1]) in valid_moves:
                 # vai a NE
@@ -221,6 +222,7 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], d
             prev_player_position = new_player_position
             new_player_position = get_player_location(state["chars"])
 
+            valid_moves = get_valid_moves(state["chars"], new_player_position, obstacle_position, True)
             # bisogna spostare il masso di una casella e ricalcolare il path
             if (new_player_position[0] - 1, new_player_position[1] + 1) in valid_moves and (new_player_position[0] + 1, new_player_position[1]) in valid_moves:
                 # vai a NE
