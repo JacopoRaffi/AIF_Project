@@ -163,9 +163,9 @@ def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,in
         
         dist_boulder_river = get_min_distance_point_to_points(boulder[0],boulder[1], river_positions)
         dist = dist_player_boulder + dist_boulder_river[1] #position 1 is just the value
-        distances.append((x, y, dist))
+        distances.append((x, y, dist, dist_boulder_river[1]))
 
-    min_distance = min(distances, key=lambda x: x[2])
+    min_distance = min(distances, key=lambda x: (x[2], x[3]))
     return min_distance[0], min_distance[1]
 '''
 def push_one_boulder_into_river_OLD(state, env : gym.Env, target=None): 
@@ -308,6 +308,7 @@ def check_better_path(new_map, current_target, actual_target=None):
             return new_path
     
     new_path = a_star(new_map, get_player_location(new_map), current_target, False, get_optimal_distance_point_to_point)
+    new_path = new_path[:-1]
     return new_path
 
 def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulder_symbol='`'):
@@ -334,7 +335,7 @@ def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulde
 
         temp = get_min_distance_point_to_points(new_boulder[0], new_boulder[1], river)
         river_target = tuple(temp[0])
-        boulder_to_river = a_star(new_map, new_boulder, river_target, False, get_optimal_distance_point_to_point)
+        boulder_to_river = a_star(new_map, new_boulder, river_target, True, get_optimal_distance_point_to_point)
 
         _,agent_first_push = position_for_boulder_push(new_boulder, boulder_to_river[1]) # get the first position the agent needs to be to push the boulder
 
@@ -343,7 +344,7 @@ def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulde
             actual_target = agent_first_push
 
         else:
-            agent_to_boulder = a_star(new_map, agent_pos,  new_boulder, False, get_optimal_distance_point_to_point) #get the new path to follow
+            agent_to_boulder = a_star(new_map, agent_pos, new_boulder, False, get_optimal_distance_point_to_point) #get the new path to follow
             agent_to_boulder = agent_to_boulder[:-1]
             actual_target = None
 
