@@ -70,12 +70,12 @@ def is_obstacle(position_element: int, coordinates : Tuple[int,int], target_posi
     """
 
     wall = "|- "
-    river = "!" 
-
+    #river = "!" 
+    #print("ELEM: ", position_element)
     if coordinates == target_position:
         return True
 
-    return chr(position_element) in wall or chr(position_element) == river
+    return chr(position_element) in wall # or chr(position_element) == river
 
 def are_less_black_blocks(old_map, new_map):
     """
