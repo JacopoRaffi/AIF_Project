@@ -54,7 +54,7 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], d
                         # creata nuova casella - cercare path per raggiungere le scale
                         return 1
                     
-                # ELSE vai a S
+                # ELSE vai a S (torno a posizione iniziale)
                 state,_,_,_ = env.step(2)   
                 prev_player_position = new_player_position
                 new_player_position = get_player_location(state["chars"])
@@ -81,11 +81,24 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], d
                     else:
                         # creata nuova casella - cercare path per raggiungere le scale
                         return 1
+                
+                # ELSE vai a N (torno a posizione iniziale)
+                state,_,_,_ = env.step(0)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location(state["chars"])
                  
-             # bisogna spostare il masso di una casella e ricalcolare il path
-            """
-                CASO DA DECIDERE
-            """
+            # bisogna spostare il masso di una casella e ricalcolare il path
+            if (new_player_position[0] - 1, new_player_position[1] + 1) in valid_moves and (new_player_position[0] + 1, new_player_position[1]) in valid_moves:
+                # vai a NE
+                state,_,_,_ = env.step(4)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location(state["chars"])
+                # vai a S
+                state,_,_,_ = env.step(2)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location(state["chars"])
+
+                return 0
         
 
         # the player is stuck going to North-East (river)
@@ -135,7 +148,25 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], d
                 else:
                     # creata nuova casella - cercare path per raggiungere le scale
                     return 1
-        
+            
+            # vai a S
+            state,_,_,_ = env.step(2)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location(state["chars"])
+
+            # bisogna spostare il masso di una casella e ricalcolare il path
+            if (new_player_position[0] - 1, new_player_position[1] + 1) in valid_moves and (new_player_position[0] + 1, new_player_position[1]) in valid_moves:
+                # vai a NE
+                state,_,_,_ = env.step(4)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location(state["chars"])
+                # vai a S
+                state,_,_,_ = env.step(2)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location(state["chars"])
+
+                return 0
+
 
         # the player is stuck going to South-East (river)
         elif direction == 5:
@@ -155,18 +186,11 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], d
                 prev_player_position = new_player_position
                 new_player_position = get_player_location
 
-                # vai nella nuova casella creata a E
-                # env.step(1)
-                prev_player_position = new_player_position
-                new_player_position = get_player_location
                 if is_player_same_position(new_player_position, prev_player_position):
-                    # masso affondato ricercare path alternativo
-                    """
-                        CASO DA DECIDERE
-                    """
+                    # masso affondato - cercare path alternativo
+                    return 0
                 else:
-                    # attraversa il fiume
-                    pass_the_river(game_map, new_player_position, 1)
+                    # creata nuova casella - cercare path per raggiungere le scale
                     return 1
                 
             # vai a S -> NE (rischio blocco fiume) -> NE
@@ -191,7 +215,27 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], d
                 else:
                     # creata nuova casella - cercare path per raggiungere le scale
                     return 1
+            
+            # vai a N
+            state,_,_,_ = env.step(0)
+            prev_player_position = new_player_position
+            new_player_position = get_player_location(state["chars"])
+
+            # bisogna spostare il masso di una casella e ricalcolare il path
+            if (new_player_position[0] - 1, new_player_position[1] + 1) in valid_moves and (new_player_position[0] + 1, new_player_position[1]) in valid_moves:
+                # vai a NE
+                state,_,_,_ = env.step(4)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location(state["chars"])
+                # vai a S
+                state,_,_,_ = env.step(2)
+                prev_player_position = new_player_position
+                new_player_position = get_player_location(state["chars"])
+
+                return 0
                 
+
+
     else:
         # the player is stuck going to East (boulder)
         if direction == 1:
