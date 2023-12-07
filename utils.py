@@ -402,3 +402,67 @@ def plot_and_save_sequence(gamestate : dict):
         f.write("\nTotal Reward: " + str(sum(rewards)))
 
     return player_positions
+
+
+
+def plot_avg_steps_difference(array1, array2):
+    """
+    Plots the average steps difference between two arrays.
+    
+    Parameters:
+    array1 (array-like): First array containing step values.
+    array2 (array-like): Second array containing step values.
+    
+    Returns:
+    None
+    """
+    labels = ['Avg optimal step', 'Avg online a star steps']
+    sums = [np.sum(array1) / len(array1), np.sum(array2) / len(array1)]
+    
+    colors = ['blue', 'red']  # Specify the colors for the bars
+    
+    plt.bar(labels, sums, color=colors)
+    plt.ylabel('Total number of steps')
+    plt.title('A star vs Online A star: steps')
+    plt.show()
+
+
+def plot_success_rate(a_star_success : int, online_a_star_success : int, tot : int):
+    """
+    Plot the success rate of A star and Online A star algorithms.
+    
+    Parameters:
+    a_star_success (int): The number of successful runs for A star algorithm.
+    online_a_star_success (int): The number of successful runs for Online A star algorithm.
+    tot (int): The total number of runs.
+    """
+ 
+    labels = ['A star', 'Online A star']
+    values = [a_star_success,online_a_star_success]
+    
+    colors = ['blue', 'red']  # Specify the colors for the bars
+    
+    plt.bar(labels, values, color=colors)
+    plt.ylabel('% of success ')
+    plt.title('A star vs online A star: Success rate')
+    plt.show()
+
+def compute_percentage_difference(array1, array2):
+    """
+    Computes the percentage difference between the sums of two arrays.
+    Usefull to get how many steps more we do with online a star compared to a star.
+
+    Parameters:
+    array1 (numpy.ndarray): The first array.
+    array2 (numpy.ndarray): The second array.
+
+    Returns:
+    float: The percentage difference between the sums of the two arrays.
+    """
+    sum1 = np.sum(array1)
+    sum2 = np.sum(array2)
+    
+    difference = abs(sum1 - sum2)
+    percentage_difference = (difference / ((sum1 + sum2) / 2)) * 100
+    
+    return round(percentage_difference, 2)
