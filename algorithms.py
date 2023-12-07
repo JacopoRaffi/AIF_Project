@@ -21,7 +21,7 @@ def print_gamestate(state):
     """
     plt.imshow(state[100:250, 400:750]) 
 
-def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],hasBoulder:bool, h: callable) -> List[Tuple[int, int]]:
+def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], hasBoulder:bool, h: callable) -> List[Tuple[int, int]]:
     """
     A* algorithm implementation to find the shortest path from the start position to the target position on a game map.
 
@@ -268,7 +268,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
 
     #Calculating the path from the boulder to the river shortest distance
     path_boulder_river = a_star(game_map, coordinates_min_boulder,final_position, get_optimal_distance_point_to_point)
-    path_boulder_river.append(final_position) 
+    #path_boulder_river.append(final_position) 
 
     #Calculating the position in which the agent have to be in order to push correctly the boulder into the river
     pushing_position = position_for_boulder_push(coordinates_min_boulder, path_boulder_river[1])[1]
@@ -279,6 +279,8 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
 
     #Correcting the path from the player to the pushing position
     agent_actions,path_player_to_river = push_boulder_path(path_boulder_river)
+    path_player_to_river = path_player_to_river[1:] #Remove the first element because the agent is already in the pushing position
+
 
     if(path_player_to_pushing_position is not None):
         if(path_player_to_river is not None):
