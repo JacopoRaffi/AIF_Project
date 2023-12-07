@@ -540,7 +540,7 @@ def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], L
             agent_path.append(boulder_path[i])
 
 
-    print(agent_path)
+    #(agent_path)
     if len(agent_path) > 0:
         agent_actions,names = actions_from_path(agent_path[0], agent_path[1:]) #get the actions the agent should perform to follow the path
     
