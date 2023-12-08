@@ -6,6 +6,7 @@ from utils import *
 from typing import Tuple, List
 import matplotlib.pyplot as plt
 from logic import position_for_boulder_push, push_boulder_path
+import IPython.display as display
 
 
 
@@ -237,7 +238,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
         else:
             agent_full_path = None
     
-    online_a_star(start, agent_full_path, env, game_map, backup_original_pushing_position,coordinates_min_boulder) #Start to walk and recompute the path if needed
+    online_a_star(start, agent_full_path, env, game_map,game ,backup_original_pushing_position,coordinates_min_boulder) #Start to walk and recompute the path if needed
     
 def check_better_path(new_map, current_target, actual_target=None):
     """
@@ -317,8 +318,12 @@ def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulde
     else:
         return None, None, current_boulder
     
-def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, first_pushing_position : Tuple[int,int] ,current_boulder : Tuple[int,int], boulder_symbol='`'):
+def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, game : np.ndarray, first_pushing_position : Tuple[int,int] ,current_boulder : Tuple[int,int], boulder_symbol='`'):
     old_map = new_map = game_map.copy() #Initialize the old and new map with the current game map 
+    image = plt.imshow(game[25:300, :475]) #Plotting the initial image
+
+
+
     final_path = [] # for debugging and evaluation
     path_length = len(path)
     while path_length > 1:
@@ -327,6 +332,9 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
         old_map = new_map.copy() #Map at timestep t-1
         actions, names = actions_from_path(start, path) #Get the actions to follow the path
         observation, reward, done, info = env.step(actions[0]) #Execute the first action
+
+        plot_anim_seq_online_a_star(observation, image) #Plots the animated sequence of the agent
+
         start = get_player_location(new_map) # Update the start position for the next iteration
         new_map = observation['chars'] #Update the new map after the step
         #TODO add plot of the game map at each step
@@ -356,4 +364,4 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
                 path = final_path_temp
                 first_pushing_position = true_pushing_position # Update the first pushing position
         
-        print("Path: ", path)
+        #print("Path: ", path)
