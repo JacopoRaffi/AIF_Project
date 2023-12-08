@@ -257,6 +257,24 @@ def check_better_path(new_map, current_target, actual_target=None):
     new_path = new_path[:-1]
     return new_path
 
+def check_boulder_to_river(new_map, current_river_target, current_boulder):
+    """
+        checks if there is a better path to follow (for boulder) after a change of state of the map
+        :param new_map: the new state after the agent's step
+        :param current_river_target: the actual river target
+        :param current_boulder: the actual boulder to push
+        :return: the new path to follow and the new first pushing position
+    """
+
+    river_positions = get_river_locations(new_map)
+    new_river_target, _ = get_min_distance_point_to_points(current_boulder[0], current_boulder[1], river_positions)
+
+    new_path = a_star(new_map, current_boulder, new_river_target, True, get_optimal_distance_point_to_point) #compute new boulder path
+    _,new_first_pushing_position = position_for_boulder_push(current_boulder, new_path[1]) # get the first position the agent needs to be to push the boulder
+    _,agent_new_path = push_boulder_path(new_path) #compute new agent path needs to follow to push the boulder into the river
+    
+    return agent_new_path, new_first_pushing_position
+
 def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulder_symbol='`'):
     """
         checks if there it is more convinient to push a new boulder
@@ -273,7 +291,7 @@ def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulde
     old_pos = get_boulder_locations(old_map, boulder_symbol)
     new_pos = get_boulder_locations(new_map, boulder_symbol)
 
-    if old_pos != new_pos: #if there is at least one new boulder seen by the agent after the step 
+    if len(old_pos) != len(new_pos): #if there is at least one new boulder seen by the agent after the step 
         new_boulder = get_best_global_distance(agent_pos, new_pos, river)
        
         if new_boulder == current_boulder: #if the new boulder is the same as the current one
@@ -301,55 +319,41 @@ def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulde
     
 def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, first_pushing_position : Tuple[int,int] ,current_boulder : Tuple[int,int], boulder_symbol='`'):
     old_map = new_map = game_map.copy() #Initialize the old and new map with the current game map 
-
-    while len(path) > 0:
+    final_path = [] # for debugging and evaluation
+    path_length = len(path)
+    while path_length > 1:
+        final_path.append(path.pop(0)) #Remove the first action because it has already been executed
+        path_length = len(path) #update the length of the path
         old_map = new_map.copy() #Map at timestep t-1
-        actions, names= actions_from_path(start, path[1:]) #Get the actions to follow the path
+        actions, names = actions_from_path(start, path) #Get the actions to follow the path
         observation, reward, done, info = env.step(actions[0]) #Execute the first action
+        start = get_player_location(new_map) # Update the start position for the next iteration
         new_map = observation['chars'] #Update the new map after the step
-
+        #TODO add plot of the game map at each step
         if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
             newpath, true_pushing_position, current_boulder = push_new_boulder(old_map, new_map, start, get_river_locations(new_map), current_boulder)
+               
+            # update path boulder to river iff near the boulder
+            path_temp2, first2 = check_boulder_to_river(new_map, path[-1], current_boulder)
 
             if(newpath == None): #The boulder to push is the same as before
                 path_temp = check_better_path(new_map, current_boulder, actual_target=first_pushing_position)
-
-                if(len(path) > len(path_temp)): #i found a shorter path
-                    path = path_temp 
-                else:
-                    path.pop(0)
-                    continue
-            else: #The boulder to push has changed
-                path = newpath
-                first_pushing_position = true_pushing_position #Update the first pushing position
-                continue
-        
-        path.pop(0) #Remove the first action because it has already been executed
-        start = get_player_location(new_map) #Update the start position for the next iteration
-        print(len(path))
-        if(len(path) == 0):
-            return
-        '''
-        if(player è bloccato) 
-            avoid_obstacle()
-            path = a_star(…)
-        '''
-        '''
-        if(vedo nuove caselle nere) 
-            new_path, true_pushing_position = push_new_boulder(…) #new path ha il boulder da pushare
-            
-            if(new path == None) # Significa che il masso è lo stesso di prima
-                path_temp = check_better_path( … )
                 
-                if(path.length( ) > path_temp.length( ) #Ho trovato un path più breve
-                    path = path_temp
-                else
-                    path = path[1:] #Tolgo la prima azione che ho già fatto e continuo
-                    continue #segue il path originale
-            else #Significa che il masso da spostare è cambiato
-                path = new_path
-                continue
-	
-	
-        path = path[1:] #Tolgo la prima azione che ho già fatto e continuo
-        '''
+                if path_temp[-1] == path_temp2[0]:
+                    final_path_temp = path_temp[:-1] + path_temp2 # concatenate the two new path
+                else:
+                    final_path_temp = path_temp + path_temp2
+
+                if(len(path) > len(final_path_temp)): #i found a shorter path
+                    path = final_path_temp 
+                    first_pushing_position = first2
+            else: #The boulder to push has changed
+                if newpath[-1] == path_temp2[0]:
+                    final_path_temp = newpath[:-1] + path_temp2
+                else:
+                    final_path_temp = newpath + path_temp2
+
+                path = final_path_temp
+                first_pushing_position = true_pushing_position # Update the first pushing position
+        
+        print("Path: ", path)
