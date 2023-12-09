@@ -410,8 +410,6 @@ def plot_and_save_sequence(gamestate : dict):
 
     return player_positions
 
-
-
 def plot_avg_steps_difference(array1, array2):
     """
     Plots the average steps difference between two arrays.
@@ -432,7 +430,6 @@ def plot_avg_steps_difference(array1, array2):
     plt.ylabel('Total number of steps')
     plt.title('A star vs Online A star: steps')
     plt.show()
-
 
 def plot_success_rate(a_star_success : int, online_a_star_success : int, tot : int):
     """
