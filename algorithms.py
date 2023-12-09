@@ -385,7 +385,7 @@ def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple
     for dx, dy in directions:
         nx, ny = x + dx, y + dy
         if 0 <= nx < game_map.shape[0] and 0 <= ny < game_map.shape[1]:
-            if game_map[nx, ny] != ord(" ") and not is_obstacle(game_map[nx, ny], pushing_position, (nx, ny) and not game_map[nx, ny] == boulder_position):
+            if game_map[nx, ny] != ord(" ") and not is_obstacle(game_map[nx, ny], pushing_position, (nx, ny)) and not game_map[nx, ny] == boulder_position:
                 neighbours.append(Tuple(nx, ny))
     
     return neighbours[0]
