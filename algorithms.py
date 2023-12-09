@@ -352,4 +352,17 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
 	
 	
         path = path[1:] #Tolgo la prima azione che ho già fatto e continuo
+
         '''
+
+def neighbour_pushing_position(game_map: np.ndarray ,pushing_position: Tuple[int,int], boulder_position: Tuple[int,int]) -> Tuple[int,int]:
+    x, y = boulder_position
+    next_positions = [(x-1, y), (x, y-1), (x, y+1), (x+1, y)] 
+    for pos in next_positions:
+        if game_map[pos] == ord(" ") or is_obstacle(game_map[pos], pushing_position, pos):
+            next_positions.remove(pos)
+            continue
+        if pos == pushing_position:
+            next_positions.remove(pos)
+            continue
+    return tuple(next_positions[0])
