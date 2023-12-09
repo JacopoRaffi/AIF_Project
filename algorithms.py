@@ -210,7 +210,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
     pushing_position = position_for_boulder_push(coordinates_min_boulder, path_boulder_river[1])[1]
     backup_original_pushing_position = pushing_position #Keep track of the original pushing position 
     if game_map[pushing_position] == ord(" "): # the target is an unseen block
-        pushing_position = coordinates_min_boulder #!!!Nearest position to the boulder pushing pos
+        pushing_position = neighbour_pushing_position(game_map, pushing_position, coordinates_min_boulder) #!!!Nearest position to the boulder pushing pos
         hasBoulder = False #The river is considered as an obstacle
         path_player_to_pushing_position = a_star(game_map, start,  pushing_position,hasBoulder,get_optimal_distance_point_to_point)
         path_player_to_pushing_position = path_player_to_pushing_position[:-1] #Remove the last element because the agent is already in the pushing position
