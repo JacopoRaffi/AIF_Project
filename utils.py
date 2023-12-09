@@ -337,6 +337,13 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
         
     return player_positions
 
+def plot_anim_seq_online_a_star(game : np.ndarray, image):
+    #Plotting the image
+    display.display(plt.gcf())
+    display.clear_output(wait=True)
+    image.set_data(game['pixel'][:, :])
+    time.sleep(0.5)
+
 def plot_and_save_sequence(gamestate : dict):
     # Create directory if it doesn't exist
     if not os.path.exists('results'):
