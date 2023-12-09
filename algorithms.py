@@ -210,7 +210,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
     pushing_position = position_for_boulder_push(coordinates_min_boulder, path_boulder_river[1])[1]
     backup_original_pushing_position = pushing_position #Keep track of the original pushing position 
     if game_map[pushing_position] == ord(" "): # the target is an unseen block
-        pushing_position = coordinates_min_boulder #!!!Nearest position to the boulder pushing pos
+        pushing_position = get_neighbour_pushing_position(game_map, pushing_position, coordinates_min_boulder) #!!!Nearest position to the boulder pushing pos
         hasBoulder = False #The river is considered as an obstacle
         path_player_to_pushing_position = a_star(game_map, start,  pushing_position,hasBoulder,get_optimal_distance_point_to_point)
         path_player_to_pushing_position = path_player_to_pushing_position[:-1] #Remove the last element because the agent is already in the pushing position
@@ -364,3 +364,29 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
                 first_pushing_position = true_pushing_position # Update the first pushing position
         
         #print("Path: ", path)
+
+def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple[int, int], boulder_position: Tuple[int, int]):
+    """
+    Returns the neighbours of the pushing position.
+
+    Args:
+        game_map (np.ndarray): The game map.
+        pushing_position (Tuple[int, int]): The pushing position.
+
+    Returns:
+        Tuple[int, int]: The neighbour of the pushing position.
+    """
+    neighbours = []
+    x, y = pushing_position
+
+    # Moves: up, down, left, right, up-left, down-right, up-right, down-left 
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
+
+    for dx, dy in directions:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < game_map.shape[0] and 0 <= ny < game_map.shape[1]:
+            if game_map[nx, ny] != ord(" ") and not is_obstacle(game_map[nx, ny], pushing_position, (nx, ny) and not game_map[nx, ny] == boulder_position):
+                neighbours.append(Tuple(nx, ny))
+    
+    return neighbours[0]
+    
