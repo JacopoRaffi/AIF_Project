@@ -584,6 +584,7 @@ def find_river_coordinates(game_env: gym.Env, game_map: np.ndarray) -> List[Tupl
         :param game_map: the initial map of the game
         :return: the coordinates of the water blocks of the river
     """
+    #TODO: update get_valid_moves() with the parameters
     # check if the river is in the initial map
     river_coordinates = np.where(game_map == ord("}"))
     if len(river_coordinates[0]) > 0:

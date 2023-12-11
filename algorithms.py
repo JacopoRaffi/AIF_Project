@@ -22,7 +22,26 @@ def print_gamestate(state):
     """
     plt.imshow(state[100:250, 400:750]) 
 
-def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], hasBoulder:bool, h: callable) -> List[Tuple[int, int]]:
+def get_optimal_distance_point_to_point(start: Tuple[int, int], target : Tuple[int,int]) -> int:
+    """
+    Calculate the optimal distance between two points.
+
+    Args:
+        start (Tuple[int, int]): The starting point coordinates.
+        target (Tuple[int, int]): The target point coordinates.
+
+    Returns:
+        int: The optimal distance between the two points.
+    """
+    targetX = target[0]
+    targetY = target[1]
+    dist_point_to_point = chebyshev_dist(start[0],start[1], targetX, targetY)
+    
+    dist = dist_point_to_point #-1
+
+    return dist
+
+def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], hasBoulder:bool, boulder_is_obstacle=False, h=get_optimal_distance_point_to_point) -> List[Tuple[int, int]]:
     """
     A* algorithm implementation to find the shortest path from the start position to the target position on a game map.
 
@@ -67,7 +86,7 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
             path = reconstruct_path(came_from, current) #Reconstruct the path from the start node to the target node
             return path
         
-        for neighbour in get_valid_moves(game_map, current, target,hasBoulder): #Neighbours of the current node
+        for neighbour in get_valid_moves(game_map, current, target,hasBoulder, boulder_is_obstacle): #Neighbours of the current node
 
             temp_g_score = g_scores[current] + 1 #g score of the neighbour calulated as the g score of the current node + 1
             
@@ -117,29 +136,10 @@ def get_min_distance_point_to_points(x, y, list_of_pairs):
     min_dist = float("inf")
     for i in list_of_pairs:
         dist = get_optimal_distance_point_to_point((x, y), (i[0], i[1]))
-        if dist < min_dist or (dist == min_dist and x == i[0]): #if the distance is the same prefers the one with the same column index
+        if dist < min_dist or (dist == min_dist and x == i[0]): #if the distance is the same prefers the one with the same raw index
             min_dist = dist
             coordinates = [i[0], i[1]]
     return tuple(coordinates), min_dist
-
-def get_optimal_distance_point_to_point(start: Tuple[int, int], target : Tuple[int,int]) -> int:
-    """
-    Calculate the optimal distance between two points.
-
-    Args:
-        start (Tuple[int, int]): The starting point coordinates.
-        target (Tuple[int, int]): The target point coordinates.
-
-    Returns:
-        int: The optimal distance between the two points.
-    """
-    targetX = target[0]
-    targetY = target[1]
-    dist_point_to_point = chebyshev_dist(start[0],start[1], targetX, targetY)
-    
-    dist = dist_point_to_point #-1
-
-    return dist
 
 def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,int]], river_positions : List[Tuple[int,int]]) -> Tuple[int, int]:
     """
@@ -203,22 +203,23 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
     hasBoulder = True #The river is not considered as an obstacle
 
     #Calculating the path from the boulder to the river shortest distance
-    path_boulder_river = a_star(game_map, coordinates_min_boulder,final_position, hasBoulder,get_optimal_distance_point_to_point)
+    path_boulder_river = a_star(game_map, coordinates_min_boulder,final_position, hasBoulder, False, get_optimal_distance_point_to_point)
     #path_boulder_river.append(final_position) 
 
     #Calculating the position in which the agent have to be in order to push correctly the boulder into the river
     pushing_position = position_for_boulder_push(coordinates_min_boulder, path_boulder_river[1])[1]
-    backup_original_pushing_position = pushing_position #Keep track of the original pushing position 
+    #backup_original_pushing_position = pushing_position #Keep track of the original pushing position 
+    nearest_pushing_position = pushing_position
     if game_map[pushing_position] == ord(" "): # the target is an unseen block
-        pushing_position = get_neighbour_pushing_position(game_map, pushing_position, coordinates_min_boulder) #!!!Nearest position to the boulder pushing pos
+        nearest_pushing_position = get_neighbour_pushing_position(game_map, pushing_position, coordinates_min_boulder) #!!!Nearest position to the boulder pushing pos
         hasBoulder = False #The river is considered as an obstacle
-        path_player_to_pushing_position = a_star(game_map, start,  pushing_position,hasBoulder,get_optimal_distance_point_to_point)
-        path_player_to_pushing_position = path_player_to_pushing_position[:-1] #Remove the last element because the agent is already in the pushing position
+        path_player_to_pushing_position = a_star(game_map, start, nearest_pushing_position, hasBoulder, True, get_optimal_distance_point_to_point)
+        #path_player_to_pushing_position = path_player_to_pushing_position[:-1] #Remove the last element because the agent is already in the pushing position
 
     else:
         hasBoulder = False #The river is considered as an obstacle
         #Calculating the path from the player to the pushing position
-        path_player_to_pushing_position = a_star(game_map, start,  pushing_position,hasBoulder,get_optimal_distance_point_to_point)
+        path_player_to_pushing_position = a_star(game_map, start,  pushing_position,hasBoulder,False, get_optimal_distance_point_to_point)
 
 
 
@@ -237,7 +238,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
         else:
             agent_full_path = None
     
-    online_a_star(start, agent_full_path, env, game_map,game ,backup_original_pushing_position,coordinates_min_boulder) #Start to walk and recompute the path if needed
+    online_a_star(start, agent_full_path, env, game_map,game ,pushing_position, nearest_pushing_position, coordinates_min_boulder) #Start to walk and recompute the path if needed
     
 def check_better_path(new_map, current_target, actual_target=None):
     """
@@ -250,14 +251,13 @@ def check_better_path(new_map, current_target, actual_target=None):
 
     if actual_target is not None:
         if not is_obstacle(new_map[actual_target], get_player_location(new_map), actual_target):
-            new_path = a_star(new_map, get_player_location(new_map), actual_target, False, get_optimal_distance_point_to_point)
+            new_path = a_star(new_map, get_player_location(new_map), actual_target, False, False, get_optimal_distance_point_to_point)
             return new_path
     
-    new_path = a_star(new_map, get_player_location(new_map), current_target, False, get_optimal_distance_point_to_point)
-    new_path = new_path[:-1]
+    new_path = a_star(new_map, get_player_location(new_map), current_target, False, True, get_optimal_distance_point_to_point)
     return new_path
 
-def check_boulder_to_river(new_map, current_river_target, current_boulder):
+def check_boulder_to_river(new_map, current_boulder):
     """
         checks if there is a better path to follow (for boulder) after a change of state of the map
         :param new_map: the new state after the agent's step
@@ -275,7 +275,7 @@ def check_boulder_to_river(new_map, current_river_target, current_boulder):
     
     return agent_new_path, new_first_pushing_position
 
-def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulder_symbol='`'):
+def push_new_boulder(old_map, new_map, agent_pos, river, nearest_first_pushing_pos, current_boulder, boulder_symbol='`'):
     """
         checks if there it is more convinient to push a new boulder
         :param old_map: the previous state of the map
@@ -294,30 +294,30 @@ def push_new_boulder(old_map, new_map, agent_pos, river, current_boulder, boulde
     if len(old_pos) != len(new_pos): #if there is at least one new boulder seen by the agent after the step 
         new_boulder = get_best_global_distance(agent_pos, new_pos, river)
        
-        if new_boulder == current_boulder: #if the new boulder is the same as the current one
-            return None, None, current_boulder
+        #if new_boulder == current_boulder: #if the new boulder is the same as the current one
+            #return None, None, current_boulder
 
         temp = get_min_distance_point_to_points(new_boulder[0], new_boulder[1], river)
         river_target = tuple(temp[0])
         boulder_to_river = a_star(new_map, new_boulder, river_target, True, get_optimal_distance_point_to_point)
 
         _,agent_first_push = position_for_boulder_push(new_boulder, boulder_to_river[1]) # get the first position the agent needs to be to push the boulder
-
+        nearest_pushing_position = agent_first_push
         if not is_obstacle(new_map[agent_first_push], agent_pos, agent_first_push): #if the agent_first_push is not an obstacle
             agent_to_boulder = a_star(new_map, agent_pos,  agent_first_push, False, get_optimal_distance_point_to_point) #get the new path to follow 
-            actual_target = agent_first_push
+            first_pushing_position = None
 
         else:
-            agent_to_boulder = a_star(new_map, agent_pos, new_boulder, False, get_optimal_distance_point_to_point) #get the new path to follow
-            agent_to_boulder = agent_to_boulder[:-1]
-            actual_target = None
+            nearest_pushing_position = get_neighbour_pushing_position(new_map, agent_first_push, new_boulder)
+            agent_to_boulder = a_star(new_map, agent_pos, nearest_pushing_position, False, get_optimal_distance_point_to_point) #get the new path to follow
+            first_pushing_position = agent_first_push
 
-        return agent_to_boulder, actual_target, new_boulder
+        return agent_to_boulder, new_boulder, first_pushing_position, nearest_pushing_position
     
     else:
-        return None, None, current_boulder
+        return None, current_boulder, None, nearest_first_pushing_pos
     
-def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, game : np.ndarray, first_pushing_position : Tuple[int,int] ,current_boulder : Tuple[int,int], boulder_symbol='`'):
+def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, game : np.ndarray, first_pushing_position : Tuple[int,int], nearest_pushing_position : Tuple[int,int], current_boulder : Tuple[int,int]):
     old_map = new_map = game_map.copy() #Initialize the old and new map with the current game map 
     image = plt.imshow(game[25:300, :475]) #Plotting the initial image
 
@@ -336,15 +336,15 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
 
         start = get_player_location(new_map) # Update the start position for the next iteration
         new_map = observation['chars'] #Update the new map after the step
-        #TODO add plot of the game map at each step
+        
         if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
-            newpath, true_pushing_position, current_boulder = push_new_boulder(old_map, new_map, start, get_river_locations(new_map), current_boulder)
+            newpath, current_boulder, true_pushing_position, nearest_pushing_position = push_new_boulder(old_map, new_map, start, get_river_locations(new_map), nearest_pushing_position, current_boulder)
                
             # update path boulder to river iff near the boulder
-            path_temp2, first2 = check_boulder_to_river(new_map, path[-1], current_boulder)
+            path_temp2, first2 = check_boulder_to_river(new_map, current_boulder)
 
             if(newpath == None): #The boulder to push is the same as before
-                path_temp = check_better_path(new_map, current_boulder, actual_target=first_pushing_position)
+                path_temp = check_better_path(new_map, nearest_pushing_position, actual_target=first_pushing_position)
                 
                 if path_temp[-1] == path_temp2[0]:
                     final_path_temp = path_temp[:-1] + path_temp2 # concatenate the two new path
@@ -376,17 +376,18 @@ def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple
     Returns:
         Tuple[int, int]: The neighbour of the pushing position.
     """
+
     neighbours = []
     x, y = pushing_position
 
     # Moves: up, down, left, right, up-left, down-right, up-right, down-left 
     directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
-
+    
     for dx, dy in directions:
         nx, ny = x + dx, y + dy
         if 0 <= nx < game_map.shape[0] and 0 <= ny < game_map.shape[1]:
-            if game_map[nx, ny] != ord(" ") and not is_obstacle(game_map[nx, ny], pushing_position, (nx, ny)) and not game_map[nx, ny] == boulder_position:
-                neighbours.append(Tuple(nx, ny))
+            if not is_obstacle(game_map[nx, ny], pushing_position, (nx, ny)) and not (nx, ny) == boulder_position:
+                neighbours.append((nx, ny))
     
     return neighbours[0]
     
