@@ -576,7 +576,7 @@ def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray,
     action = random.choice(actions)
     return action
 
-def find_river_coordinates(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]]:
+def find_river_coordinates(game_env: gym.Env, game_map: np.ndarray, color_map) -> List[Tuple[int, int]]:
     """
         moves the player until a water block is found
         a river is assumed to be a vertical straight line of water blocks
@@ -587,6 +587,7 @@ def find_river_coordinates(game_env: gym.Env, game_map: np.ndarray) -> List[Tupl
     #TODO: update get_valid_moves() with the parameters
     # check if the river is in the initial map
     river_coordinates = np.where(game_map == ord("}"))
+    #river_coordinates = get_river_locations(game_map,color_map)
     if len(river_coordinates[0]) > 0:
             found = True
             return river_coordinates
