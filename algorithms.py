@@ -335,8 +335,9 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
 
         plot_anim_seq_online_a_star(observation, image) #Plots the animated sequence of the agent
 
-        start = get_player_location(new_map) # Update the start position for the next iteration
         new_map = observation['chars'] #Update the new map after the step
+        start = get_player_location(new_map) # Update the start position for the next iteration
+
         
         if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
             newpath, current_boulder, true_pushing_position, nearest_pushing_position = push_new_boulder(old_map, new_map, start, get_river_locations(new_map,color_map), nearest_pushing_position, current_boulder)

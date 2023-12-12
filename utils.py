@@ -33,21 +33,6 @@ def get_boulder_locations(game_map: np.ndarray, symbol : str = "`") -> List[Tupl
     boulders_positions = list(zip(tuples[0], tuples[1])) #converte la lista di tuple in una lista di liste
     return boulders_positions
 
-def get_river_locations_OLD(game_map: np.ndarray, symbol : str = "}") -> List[Tuple[int, int]]:
-    """
-    Returns the positions of the specified symbol in the game map.
-
-    Parameters:
-    game_map (np.ndarray): The game map represented as a numpy array.
-    symbol (str): The symbol to search for in the game map. Default is "}".
-
-    Returns:
-    Tuple[int, int]: A tuple containing the row and column indices of the symbol in the game map.
-    """
-    tuples = np.where(game_map == ord(symbol))
-    river_positions = list(zip(tuples[0], tuples[1]))
-    return river_positions
-
 def get_river_locations(game_map: np.ndarray,color_map : np.ndarray, symbol : str = "}") -> List[Tuple[int, int]]:
     """
     Find a character in the game map and check if the color in the color map is 4.
