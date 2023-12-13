@@ -190,7 +190,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
 
     start = get_player_location(game_map)
     boulders = get_boulder_locations(game_map)
-    river_positions = get_river_locations(game_map, color_map)
+    river_positions = find_river(env,game_map, color_map)
     #river_positions = find_river_coordinates(env,game_map, color_map)
 
 
@@ -374,7 +374,15 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
 
                 path = final_path_temp
                 first_pushing_position = true_pushing_position # Update the first pushing position
-        print("River pos:",final_river_position)
+
+        else: #if there are not less black blocks than before
+            pass
+
+
+    #Do one step on the right        
+    #observation, reward, done, info = env.step(1) #Execute the first action
+    #plot_anim_seq_online_a_star(observation, image) #Plots the animated sequence of the agent
+
     return final_river_position
 
 def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple[int, int], boulder_position: Tuple[int, int]):
@@ -393,7 +401,7 @@ def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple
     x, y = pushing_position
 
     # Moves: up, down, left, right, up-left, down-right, up-right, down-left 
-    directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1), (0, 2), (0, -2), (2, 0), (-2, 0), (2,2), (-2,-2), (2,-2), (-2,2)]
     
     for dx, dy in directions:
         nx, ny = x + dx, y + dy
@@ -401,5 +409,9 @@ def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple
             if not is_obstacle(game_map[nx, ny], pushing_position, (nx, ny)) and not (nx, ny) == boulder_position:
                 neighbours.append((nx, ny))
     
+    
+    
     return neighbours[0]
+    
+
     
