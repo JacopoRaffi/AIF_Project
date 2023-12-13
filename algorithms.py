@@ -281,7 +281,7 @@ def check_boulder_to_river(new_map,color_map, current_boulder, river_target):
     _,new_first_pushing_position = position_for_boulder_push(current_boulder, new_path[1]) # get the first position the agent needs to be to push the boulder
     _,agent_new_path = push_boulder_path(new_path) #compute new agent path needs to follow to push the boulder into the river
     
-    return agent_new_path, new_first_pushing_position, new_path[-1]
+    return agent_new_path, new_first_pushing_position, new_path[-1], new_path
 
 def push_new_boulder(old_map, new_map, color_map, agent_pos, river_target, nearest_first_pushing_pos, current_boulder, boulder_symbol='`'):
     """
@@ -336,6 +336,7 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
     final_path = [] # for debugging and evaluation
     path_length = len(path)
     while path_length > 1:
+        print("Path: ", path)
         final_path.append(path.pop(0)) #Remove the first action because it has already been executed
         path_length = len(path) #update the length of the path
         old_map = new_map.copy() #Map at timestep t-1
@@ -343,50 +344,59 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
         observation, reward, done, info = env.step(actions[0]) #Execute the first action
 
         plot_anim_seq_online_a_star(observation, image) #Plots the animated sequence of the agent
+        
+        if(len(path) == 1): #Finish the execution without computing a path with a new boulder
+            return final_river_position, observation
 
         new_map = observation['chars'] #Update the new map after the step
         start = get_player_location(new_map) # Update the start position for the next iteration
 
         
-        if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
+        #if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
 
-            newpath, current_boulder, true_pushing_position, nearest_pushing_position = push_new_boulder(old_map, new_map, color_map,start, river_target, nearest_pushing_position, current_boulder)
+        newpath, current_boulder, true_pushing_position, nearest_pushing_position = push_new_boulder(old_map, new_map, color_map,start, river_target, nearest_pushing_position, current_boulder)
 
-            # update path boulder to river iff near the boulder
-            path_temp2, first2, final_river_position = check_boulder_to_river(new_map, color_map,current_boulder, river_target)
+        # update path boulder to river iff near the boulder
+        path_temp2, first2, final_river_position, boulder_path = check_boulder_to_river(new_map, color_map,current_boulder, river_target)
+        current_boulder = boulder_path[0] #Keeps track where the boulder we are pushing is
 
-            if(newpath == None): #The boulder to push is the same as before
-                path_temp = check_better_path(new_map, nearest_pushing_position, actual_target=first_pushing_position)
-                
-                if path_temp[-1] == path_temp2[0]:
-                    final_path_temp = path_temp[:-1] + path_temp2 # concatenate the two new path
-                else:
-                    final_path_temp = path_temp + path_temp2
+        print("Boulder: ", current_boulder)
+        print("River_ target: ", final_river_position)
 
-                if(len(path) >= len(final_path_temp)): #i found a shorter path
-                    path = final_path_temp 
-                    first_pushing_position = first2
-            else: #The boulder to push has changed
-                if newpath[-1] == path_temp2[0]:
-                    final_path_temp = newpath[:-1] + path_temp2
-                else:
-                    final_path_temp = newpath + path_temp2
+        if(newpath == None): #The boulder to push is the same as before
+            path_player_to_pushing_pos = check_better_path(new_map, nearest_pushing_position, actual_target=first_pushing_position)
+            
+            if path_player_to_pushing_pos[-1] == path_temp2[0]:
+                final_path_temp = path_player_to_pushing_pos[:-1] + path_temp2 # concatenate the two new path
+            else:
+                final_path_temp = path_player_to_pushing_pos + path_temp2
 
-                path = final_path_temp
-                first_pushing_position = true_pushing_position # Update the first pushing position
+            if(len(path) >= len(final_path_temp)): #i found a shorter path
+                path = final_path_temp 
+                first_pushing_position = first2
+        else: #The boulder to push has changed
+            if newpath[-1] == path_temp2[0]:
+                final_path_temp = newpath[:-1] + path_temp2
+            else:
+                final_path_temp = newpath + path_temp2
 
-        else: #if there are not less black blocks than before
-            pass
+            path = final_path_temp
+            first_pushing_position = true_pushing_position # Update the first pushing position
+
+        #else: #if there are not less black blocks than before
+            #pass
 
 
     #Do one step on the right        
     #observation, reward, done, info = env.step(1) #Execute the first action
     #plot_anim_seq_online_a_star(observation, image) #Plots the animated sequence of the agent
-    action, _ = action_map(get_player_location(new_map), final_river_position)
-    observation, _,_,_ = env.step(action)
-    plot_anim_seq_online_a_star(observation, image)
+    #action, _ = action_map(get_player_location(new_map), final_river_position)
+    #observation, _,_,_ = env.step(action)
+    #plot_anim_seq_online_a_star(observation, image)
     # TODO: final part where the agent go to the exit (the code is in the notebook)
-    print("Final path: ", final_path) 
+    final_path.append(path[0])
+    print("Final path: ",final_path) 
+    print("path: ", path)
     return final_river_position, observation #second return just for test purposes (it will be removed)
 
 def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple[int, int], boulder_position: Tuple[int, int]):
