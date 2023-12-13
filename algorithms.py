@@ -229,7 +229,9 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
 
     #Correcting the path from the player to the pushing position
     agent_actions,path_player_to_river = push_boulder_path(path_boulder_river)
-    path_player_to_river = path_player_to_river[1:] #Remove the first element because the agent is already in the pushing position
+
+    if(pushing_position == nearest_pushing_position):
+        path_player_to_river = path_player_to_river[1:] #Remove the first element because the agent is already in the pushing position
 
     if(path_player_to_pushing_position is not None):
         if(path_player_to_river is not None):
