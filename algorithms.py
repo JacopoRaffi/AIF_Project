@@ -382,8 +382,12 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
     #Do one step on the right        
     #observation, reward, done, info = env.step(1) #Execute the first action
     #plot_anim_seq_online_a_star(observation, image) #Plots the animated sequence of the agent
-
-    return final_river_position
+    action, _ = action_map(get_player_location(new_map), final_river_position)
+    observation, _,_,_ = env.step(action)
+    plot_anim_seq_online_a_star(observation, image)
+    # TODO: final part where the agent go to the exit (the code is in the notebook)
+    print("Final path: ", final_path) 
+    return final_river_position, observation #second return just for test purposes (it will be removed)
 
 def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple[int, int], boulder_position: Tuple[int, int]):
     """

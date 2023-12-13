@@ -17,9 +17,21 @@ def get_player_location(game_map: np.ndarray, symbol: str = "@") -> Tuple[int, i
         :param symbol: the symbol of the agent
         :return: the coordinates of the agent
     """
-
+    
     x, y = np.where(game_map == ord(symbol))
+    if len(x) == 0 or len(y) == 0:
+        return None
     return (x[0], y[0])
+
+def get_exit_location(game_map: np.ndarray, symbol: str = ">") -> Tuple[int, int]:
+    """
+        gets the coordinates of the exit in the game map
+        :param game_map: the game map
+        :param symbol: the symbol of the exit
+        :return: the coordinates of the exit
+    """
+
+    return get_player_location(game_map, symbol)
 
 def get_boulder_locations(game_map: np.ndarray, symbol : str = "`") -> List[Tuple[int, int]]:
     """
@@ -325,17 +337,20 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
     Returns:
         List[Tuple[int, int]]: The player positions at each step of the sequence.
     """
+
     rewards = []
     image = plt.imshow(game[25:300, :475])
     player_positions = []
     for action in actions:
         s, r, _, _ = env.step(action)
         rewards.append(r)
-        
+        print(action)
         display.display(plt.gcf())
         display.clear_output(wait=True)
         image.set_data(s['pixel'][:, :])
-        player_positions.append(get_player_location(game_map))
+        player_pos = get_player_location(s['chars'])
+        if player_pos is not None:
+            player_positions.append(player_pos)
         time.sleep(0.5)
     print("Rewards: ")
     for r in rewards:
