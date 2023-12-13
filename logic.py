@@ -589,7 +589,6 @@ def find_river(game_env: gym.Env, game_map: np.ndarray, color_map) -> List[Tuple
     #river_coordinates = np.where(game_map == ord("}"))
     river_coordinates = get_river_locations(game_map,color_map)
     if len(river_coordinates) > 0:
-            found = True
             return river_coordinates
             
     # if the river is not seen player will pefrom moves until it's found
@@ -604,4 +603,6 @@ def find_river(game_env: gym.Env, game_map: np.ndarray, color_map) -> List[Tuple
         river_coordinates = get_river_locations(game_map,color_map)
         if len(river_coordinates) > 0: #if the river is found
             found = True
+            
+    return river_coordinates
     
