@@ -350,7 +350,7 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
         print(r)
     print("Total reward: ", sum(rewards))
         
-    return player_positions
+    return rewards
 
 def plot_anim_seq_online_a_star(game : np.ndarray, image):
     #Plotting the image
