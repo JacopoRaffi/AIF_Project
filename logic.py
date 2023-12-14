@@ -578,6 +578,26 @@ def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray,
     action = random.choice(actions)
     return action
 
+def find_stairs(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]]:
+    stairs_coordinates = get_exit_location(game_map)
+    if not stairs_coordinates is None:
+        return stairs_coordinates
+    else:
+        return None
+
+    found = False
+    while not found: 
+        action = 1
+        obs_state, _, _, _ = game_env.step(action)
+        game_map = obs_state["chars"] #update observable map so to take the next "best action"
+        color_map = obs_state["colors"]
+        #river_coordinates = np.where(obs_state["chars"] == ord("}"))
+        stairs_coordinates = get_exit_location(game_map)
+        if not stairs_coordinates is None: #if the river is found
+            found = True
+
+    return stairs_coordinates
+
 def find_river(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]]:
     """
         moves the player until a water block is found

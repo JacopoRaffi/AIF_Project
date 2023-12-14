@@ -342,7 +342,7 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
         prev_position = get_player_location(old_map) # Update the prev player position
 
         if is_player_same_position(start, prev_position):
-            state, result, river_target = avoid_the_obstacle(game_map, start, action[0], env)
+            state, result, river_target = avoid_the_obstacle(game_map, start, actions[0], env)
             if result == 0:
                 return None, None
             elif result == 1:
@@ -407,3 +407,24 @@ def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple
     
     return neighbours[0]
     
+def find_exit(env : gym.Env , game_map : np.ndarray):
+    player_pos = get_player_location(game_map)
+    exit_pos = find_stairs(env, game_map)
+    rewards = []
+
+    if(exit_pos is None):
+        return 0.0
+
+    path_to_exit = a_star(game_map, player_pos, exit_pos, False, False, get_optimal_distance_point_to_point)
+    actions_to_exit,names = actions_from_path(player_pos, path_to_exit[1:])
+
+    for action in actions_to_exit:
+        s, r, _, _ = env.step(action)
+        #print("player:",get_player_location(s['chars']), "exit:", exit_pos)
+        if get_player_location(s['chars']) == None:
+            rewards.append(r)
+            break
+        else:
+            rewards.append(r)
+
+    return rewards[-1] #Return the reward of the last action
