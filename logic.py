@@ -576,7 +576,7 @@ def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray,
     action = random.choice(actions)
     return action
 
-def find_river(game_env: gym.Env, game_map: np.ndarray, color_map) -> List[Tuple[int, int]]:
+def find_river(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]]:
     """
         moves the player until a water block is found
         a river is assumed to be a vertical straight line of water blocks
@@ -586,23 +586,21 @@ def find_river(game_env: gym.Env, game_map: np.ndarray, color_map) -> List[Tuple
     """
     
     # check if the river is in the initial map
-    #river_coordinates = np.where(game_map == ord("}"))
-    river_coordinates = get_river_locations(game_map,color_map)
+    river_coordinates = get_river_locations(game_map)
     if len(river_coordinates) > 0:
+            found = True
             return river_coordinates
-            
     # if the river is not seen player will pefrom moves until it's found
     found = False
     player_location = get_player_location(game_map)
     while not found: 
-        action = choose_best_action(get_valid_moves(game_map, player_location, (-1,-1), False), game_map, player_location)
+        action = choose_best_action(get_valid_moves(game_map, player_location, (-1,-1), False, False), game_map, player_location)
         obs_state, _, _, _ = game_env.step(action)
-        game_map = obs_state["chars"] #update observable map so to take the next "best action"
-        color_map = obs_state["colors"]
-        #river_coordinates = np.where(obs_state["chars"] == ord("}"))
-        river_coordinates = get_river_locations(game_map,color_map)
+
+        river_coordinates = get_river_locations(obs_state["chars"])
         if len(river_coordinates) > 0: #if the river is found
             found = True
-            
-    return river_coordinates
+        
+        game_map = obs_state["chars"] #update observable map so to take the next "best action"
     
+    return river_coordinates

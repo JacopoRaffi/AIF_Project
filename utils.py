@@ -45,23 +45,19 @@ def get_boulder_locations(game_map: np.ndarray, symbol : str = "`") -> List[Tupl
     boulders_positions = list(zip(tuples[0], tuples[1])) #converte la lista di tuple in una lista di liste
     return boulders_positions
 
-def get_river_locations(game_map: np.ndarray,color_map : np.ndarray, symbol : str = "}") -> List[Tuple[int, int]]:
+def get_river_locations(game_map: np.ndarray, symbol : str = "}") -> List[Tuple[int, int]]:
     """
-    Find a character in the game map and check if the color in the color map is 4.
+    Returns the positions of the specified symbol in the game map.
 
     Parameters:
     game_map (np.ndarray): The game map represented as a numpy array.
-    color_map (np.ndarray): The color map represented as a numpy array.
-    character (str): The character to search for in the game map.
+    symbol (str): The symbol to search for in the game map. Default is "}".
 
     Returns:
-    bool: True if the character is found and the color is 4, False otherwise.
+    Tuple[int, int]: A tuple containing the row and column indices of the symbol in the game map.
     """
-    river_positions = []
-    character_positions = np.where(game_map == ord(symbol))
-    for row, col in zip(character_positions[0], character_positions[1]):
-        if color_map[row, col] == 4: #4 river
-            river_positions.append((row, col))
+    tuples = np.where(game_map == ord(symbol))
+    river_positions = list(zip(tuples[0], tuples[1]))
     return river_positions
 
 def get_all_map_positions(game_map: np.ndarray) -> List[Tuple[int, int]]:
@@ -337,20 +333,17 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
     Returns:
         List[Tuple[int, int]]: The player positions at each step of the sequence.
     """
-
     rewards = []
     image = plt.imshow(game[25:300, :475])
     player_positions = []
     for action in actions:
         s, r, _, _ = env.step(action)
         rewards.append(r)
-        print(action)
+        
         display.display(plt.gcf())
         display.clear_output(wait=True)
         image.set_data(s['pixel'][:, :])
-        player_pos = get_player_location(s['chars'])
-        if player_pos is not None:
-            player_positions.append(player_pos)
+        player_positions.append(get_player_location(game_map))
         time.sleep(0.5)
     print("Rewards: ")
     for r in rewards:
