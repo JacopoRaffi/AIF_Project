@@ -449,7 +449,9 @@ def avoid_the_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], d
             """
 
     # player is still stuck
-    return -1
+    # TODO: cancella return 0 dai casi boulder
+    # return state, result, river_target
+    return 0
 
 def get_obstacle_location(player_position: Tuple[int, int], direction: int) -> Tuple[int, int]:
     """

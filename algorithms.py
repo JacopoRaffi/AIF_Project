@@ -339,6 +339,14 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
 
         new_map = observation['chars'] #Update the new map after the step
         start = get_player_location(new_map) # Update the start position for the next iteration
+        prev_position = get_player_location(old_map) # Update the prev player position
+
+        if is_player_same_position(start, prev_position):
+            state, result, river_target = avoid_the_obstacle(game_map, start, action[0], env)
+            if result == 0:
+                return None, None
+            elif result == 1:
+                return state, river_target
 
         if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
             newpath, current_boulder, true_pushing_position, nearest_pushing_position = push_new_boulder(old_map, new_map, start, get_river_locations(new_map), nearest_pushing_position, current_boulder)
