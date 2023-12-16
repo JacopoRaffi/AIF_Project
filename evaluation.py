@@ -13,17 +13,17 @@ def test_online_a_star(iterations):
         state = env.reset()
 
         game_map = state['chars']
-        river_target, steps = push_one_boulder_into_river(state, env)
+        obs, river_target, steps = push_one_boulder_into_river(state, env)
 
         print("River target: ", river_target)
         print(state['chars'][river_target[0]][river_target[1]])
         print(ord("}"))
 
-        '''Fix this later
-        while state['chars'][river_target[0]][river_target[1]] == ord("}"):
-            river_target, steps = push_one_boulder_into_river(state, env)
+        
+        while obs['chars'][river_target] == ord("}"):
+            obs, river_target, steps = push_one_boulder_into_river(state, env)
             run_steps = run_steps + steps
-        '''
+        
         if(river_target is None): #For now we will just skip this iteration and consider it a fail
             continue
 

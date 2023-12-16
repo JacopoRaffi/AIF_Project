@@ -335,18 +335,18 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
         plot_anim_seq_online_a_star(observation, image) #Plots the animated sequence of the agent
 
         if(len(path) == 1): #Finish the execution without computing a path with a new boulder
-            return observation, current_river_target
+            return observation, current_river_target, len(final_path)
 
         new_map = observation['chars'] #Update the new map after the step
         start = get_player_location(new_map) # Update the start position for the next iteration
         prev_position = get_player_location(old_map) # Update the prev player position
 
         if is_player_same_position(start, prev_position):
-            state, result, river_target = avoid_the_obstacle(game_map, start, actions[0], env)
+            state, result, river_target = avoid_obstacle(game_map, start, actions[0], env)
             if result == 0:
-                return None, None
+                return None, None, None
             elif result == 1:
-                return state, river_target
+                return state, river_target, len(final_path)
 
         if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
             newpath, current_boulder, true_pushing_position, nearest_pushing_position = push_new_boulder(old_map, new_map, start, get_river_locations(new_map), nearest_pushing_position, current_boulder)
@@ -357,6 +357,9 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
             if(newpath == None): #The boulder to push is the same as before
                 path_temp = check_better_path(new_map, nearest_pushing_position, actual_target=first_pushing_position)
                 
+                if path_temp is None:
+                    return None, None, None
+
                 if path_temp[-1] == path_temp2[0]:
                     final_path_temp = path_temp[:-1] + path_temp2 # concatenate the two new path
                 else:
@@ -379,7 +382,7 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
         
         #print("Path: ", path)
 
-    return observation, current_river_target #return just for test purposes (it will be removed)
+    return observation, current_river_target, len(final_path) #return just for test purposes (it will be removed)
 
 def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple[int, int], boulder_position: Tuple[int, int]):
     """
