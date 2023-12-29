@@ -454,7 +454,7 @@ def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], L
     #agent_actions.append(1) #add action to push to the river
     return agent_actions, agent_path
 
-def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int]) -> int: 
+def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int], black_list_boulder) -> int: 
     """
         choose the best action for the agent so to find a water block(as a result, also the river)
         :param valid_moves: all the moves the agent can perform from its position
@@ -463,7 +463,7 @@ def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray,
 
     action = -1
     actions = []
-    boulder_positions = get_boulder_locations(game_map)
+    boulder_positions = get_boulder_locations(game_map, black_list_boulder)
     not_same_coords = [move for move in valid_moves if move not in boulder_positions]
 
     if len(not_same_coords) > 0: #if there is a step that doesn't move a boulder
