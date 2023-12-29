@@ -9,7 +9,6 @@ from logic import *
 import IPython.display as display
 
 
-
 def print_gamestate(state):
     """
     Prints the game state.
@@ -169,7 +168,7 @@ def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,in
     min_distance = min(distances, key=lambda x: (x[2], x[3]))
     return min_distance[0], min_distance[1]
 
-def push_one_boulder_into_river(state, env : gym.Env, target=None): 
+def push_one_boulder_into_river(state, env : gym.Env,black_list_boulder, target=None): 
     """
     Pushes one boulder into the river in the game environment.
 
@@ -187,7 +186,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
     game = state['pixel']
 
     start = get_player_location(game_map)
-    boulders = get_boulder_locations(game_map)
+    boulders = get_boulder_locations(game_map, black_list_boulder)
     river_positions = find_river(env, game_map)
 
     #If there is no target means that is the first boulder pushed into the river
@@ -238,7 +237,7 @@ def push_one_boulder_into_river(state, env : gym.Env, target=None):
         else:
             agent_full_path = None
     
-    return online_a_star(start, agent_full_path, env, game_map,game ,pushing_position, nearest_pushing_position, coordinates_min_boulder, path_boulder_river[-1]) #Start to walk and recompute the path if needed
+    return online_a_star(start, agent_full_path, env, game_map,game ,pushing_position, nearest_pushing_position, coordinates_min_boulder, path_boulder_river[-1], black_list_boulder) #Start to walk and recompute the path if needed
     
 def check_better_path(new_map, current_target, actual_target=None):
     """
@@ -275,7 +274,7 @@ def check_boulder_to_river(new_map, current_boulder):
     
     return agent_new_path, new_first_pushing_position, new_river_target, new_path[0]
 
-def push_new_boulder(old_map, new_map, agent_pos, river, nearest_first_pushing_pos, current_boulder, boulder_symbol='`'):
+def push_new_boulder(old_map, new_map, agent_pos, river, nearest_first_pushing_pos, current_boulder, black_list_boulder,boulder_symbol='`'):
     """
         checks if there it is more convinient to push a new boulder
         :param old_map: the previous state of the map
@@ -317,7 +316,7 @@ def push_new_boulder(old_map, new_map, agent_pos, river, nearest_first_pushing_p
     else:
         return None, current_boulder, None, nearest_first_pushing_pos
     
-def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, game : np.ndarray, first_pushing_position : Tuple[int,int], nearest_pushing_position : Tuple[int,int], current_boulder : Tuple[int,int], river_target):
+def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, game : np.ndarray, first_pushing_position : Tuple[int,int], nearest_pushing_position : Tuple[int,int], current_boulder : Tuple[int,int], river_target, black_list_boulder):
     old_map = new_map = game_map.copy() #Initialize the old and new map with the current game map 
     image = plt.imshow(game[25:300, :475]) #Plotting the initial image
 
@@ -347,9 +346,13 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
                 return None, None, None
             elif result == 1:
                 return state, river_target, len(final_path)
+            
+            elif result == 2:
+                black_list_boulder.append(current_boulder)
+                return None, None, black_list_boulder
 
         if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
-            newpath, current_boulder, true_pushing_position, nearest_pushing_position = push_new_boulder(old_map, new_map, start, get_river_locations(new_map), nearest_pushing_position, current_boulder)
+            newpath, current_boulder, true_pushing_position, nearest_pushing_position = push_new_boulder(old_map, new_map, start, get_river_locations(new_map), nearest_pushing_position, current_boulder, black_list_boulder)
                
             # update path boulder to river iff near the boulder
             path_temp2, first2, new_river_target, tmp_boulder = check_boulder_to_river(new_map, current_boulder)

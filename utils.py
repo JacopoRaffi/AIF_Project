@@ -33,16 +33,21 @@ def get_exit_location(game_map: np.ndarray, symbol: str = ">") -> Tuple[int, int
 
     return get_player_location(game_map, symbol)
 
-def get_boulder_locations(game_map: np.ndarray, symbol : str = "`") -> List[Tuple[int, int]]:
+def get_boulder_locations(game_map: np.ndarray, black_list_boulder, symbol: str = "`") -> List[Tuple[int, int]]:
     """
         gets the coordinates of the boulders in the game map
         :param game_map: the game map
+        :param black_list_boulder: the list of boulders to be removed
         :param symbol: the symbol of the boulder
         :return: the coordinates of the boulders
     """
-
-    tuples = np.where(game_map == ord(symbol))
+    tuples = np.where(game_map == ord(symbol)) 
+    
     boulders_positions = list(zip(tuples[0], tuples[1])) #converte la lista di tuple in una lista di liste
+    
+    # Remove boulders in the black list
+    boulders_positions = [pos for pos in boulders_positions if pos not in set(black_list_boulder)]
+    
     return boulders_positions
 
 def get_river_locations(game_map: np.ndarray, symbol : str = "}") -> List[Tuple[int, int]]:

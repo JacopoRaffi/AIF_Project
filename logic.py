@@ -59,7 +59,8 @@ def avoid_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], direc
                 state,_,_,_ = env.step(2)   
                 prev_player_position = new_player_position
                 new_player_position = get_player_location(state["chars"])
-
+            else:
+                return state, 2, river_target
             # vai a S (forse muro) -> NE (rischio blocco fiume) -> NE
             if (new_player_position[0] + 1, new_player_position[1]) in valid_moves:
                 # vai a S
@@ -84,7 +85,8 @@ def avoid_obstacle(game_map: np.ndarray, player_position: Tuple[int, int], direc
                 state,_,_,_ = env.step(0)
                 prev_player_position = new_player_position
                 new_player_position = get_player_location(state["chars"])
-                 
+            else:
+                return state, 2, river_target  
             # bisogna spostare il masso di una casella e ricalcolare il path
             if (new_player_position[0] - 1, new_player_position[1] + 1) in valid_moves and (new_player_position[0] + 1, new_player_position[1]) in valid_moves:
                 # vai a NE
