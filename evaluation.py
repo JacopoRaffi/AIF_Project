@@ -3,6 +3,16 @@ from logic import *
 from utils import *
 
 def test_online_a_star(iterations, tests):
+    """
+    Test the A* algorithm online.
+
+    Args:
+        iterations (int): The number of iterations to run the test.
+        tests (int): The number of tests to perform.
+
+    Returns:
+        None
+    """
     print("\nStarting test: A* online\n")
     list_completed = []
     list_avg_time_per_success = []
@@ -16,36 +26,32 @@ def test_online_a_star(iterations, tests):
         for i in range(iterations):
             run_steps = 0
             black_list_boulders = []
-            env = gym.make("MiniHack-River-Narrow-v0", observation_keys=("chars", "pixel", "colors"))
+            env = gym.make("MiniHack-River-Narrow-v0", observation_keys=("chars", "pixel"))
             state = env.reset()
+            
             start_time = time.time()
             
-            game_map = state['chars']
-            obs, river_target, steps = push_one_boulder_into_river(state, env, black_list_boulders)
+            obs, river_target, steps = push_one_boulder_into_river(state, env, black_list_boulders, plot=False)
+            
+            if obs is None and river_target is None and steps is None:
+                continue
 
-            #print("River target: ", river_target)
-            #print(state['chars'][river_target[0]][river_target[1]])
-            #print(ord("}"))
-            #print(river_target)
-            #print(steps)
-
-            while obs['chars'][river_target] == ord("}"):
-                obs, river_target, len = push_one_boulder_into_river(obs, env, black_list_boulders)
+            while river_target is None or obs['chars'][river_target] == ord("}"):
+                if obs is None:
+                    break
+                obs, river_target, steps = push_one_boulder_into_river(obs, env, black_list_boulders, plot=False)
                 if(steps is not None):
                     run_steps = run_steps + steps
-
+                
+            if obs is None:
+                continue
             
-            '''if(river_target is None): #For now we will just skip this iteration and consider it a fail
-                continue'''
-
             run_steps = run_steps + steps
-
+            game_map = state['chars']
             #Going between the river
             action,_  = action_map(get_player_location(game_map), river_target)
             state,_,_,_ = env.step(action)
             run_steps = run_steps + 1
-
-            game_map = state['chars']
 
             result,steps = find_exit(env, game_map)
 
@@ -61,14 +67,29 @@ def test_online_a_star(iterations, tests):
         list_completed.append(successfully_completed)
         list_avg_time_per_success.append(sum(avg_time) / successfully_completed)
         list_avg_steps.append(sum(number_of_steps)/successfully_completed)
-    print(list_completed)
-    print(list_avg_steps)
-    print(list_avg_time_per_success)
-    print("Average total succesfully completed: ", sum(list_completed)/tests)
+
+    print("Average total succesfully completed: ", (sum(list_completed)/tests)/iterations*100, "%")
     print("Average total steps: ", sum(list_avg_steps)/tests)
     print("Average total time: ", sum(list_avg_time_per_success)/tests, "\n")
 
 
+def test_classic_a_star(iterations, tests):
+    """
+    Test the A* classic algorithm for crossing the river in a MiniHack environment.
+
+    Args:
+        iterations (int): The number of iterations to run the test.
+        tests (int): The number of tests to perform.
+
+    Returns:
+        None
+    """
+    list_completed = []
+    list_avg_time_per_success = []
+    list_avg_steps = []
+
+    print("\nStarting test: A* classic\n")
+    # Rest of the code...
 def test_classic_a_star(iterations,tests):
     list_completed = []
     list_avg_time_per_success = []
@@ -80,11 +101,12 @@ def test_classic_a_star(iterations,tests):
         successfully_completed = 0
         number_of_steps = []
         avg_time = []
+
         
         for i in range(iterations):
             run_steps = 0
-            
-            env = gym.make("MiniHack-River-Narrow-v0", observation_keys=("chars", "pixel", "colors"))
+            black_list_boulders = []
+            env = gym.make("MiniHack-River-Narrow-v0", observation_keys=("chars", "pixel"))
             state = env.reset()
             start_time = time.time()
             game_map = state['chars']
@@ -93,8 +115,8 @@ def test_classic_a_star(iterations,tests):
             
             #get locations of the player, boulders and river
             start = get_player_location(game_map)
-            boulders = get_boulder_locations(game_map)
-            river_positions = find_river(env, game_map, color_map=state['colors'])
+            boulders = get_boulder_locations(game_map, black_list_boulders)
+            river_positions = find_river(env, game_map, black_list_boulders)
             target = None
 
             #Get full path from the player to the river
@@ -160,9 +182,14 @@ def test_classic_a_star(iterations,tests):
             obs, _,_,_ = env.step(action)
             run_steps = run_steps + 1
 
+            game_map = obs['chars']
+            game_gui = obs['pixel']
 
+            player_pos = get_player_location(game_map)
+            exit_pos = get_exit_location(game_map)
             # river -> stairs (exit)
-            game_map = state['chars']
+            game_map = obs['chars']
+            
             result,steps = find_exit(env, game_map)
             run_steps = run_steps + steps
 
@@ -172,22 +199,24 @@ def test_classic_a_star(iterations,tests):
                 avg_time.append(elapsed_time)
                 number_of_steps.append(run_steps)
             
+        if successfully_completed == 0:
+            print("No success = 0%")
+            list_completed.append(successfully_completed)
+            list_avg_time_per_success.append(0)
+            list_avg_steps.append(0)
+        else:
+            print("Successfully completed: ", successfully_completed,"/",iterations, " = ", successfully_completed/iterations*100, "%")
+            print("Average number of steps: ", sum(number_of_steps)/successfully_completed)
+            print("Average time per success: ", sum(avg_time) / successfully_completed, "\n")
+            list_completed.append(successfully_completed)
+            list_avg_time_per_success.append(sum(avg_time) / successfully_completed)
+            list_avg_steps.append(sum(number_of_steps)/successfully_completed)
 
-        print("Successfully completed: ", successfully_completed,"/",iterations, " = ", successfully_completed/iterations*100, "%")
-        print("Average number of steps: ", sum(number_of_steps)/successfully_completed)
-        print("Average time per success: ", sum(avg_time) / successfully_completed, "\n")
-        list_completed.append(successfully_completed)
-        list_avg_time_per_success.append(sum(avg_time) / successfully_completed)
-        list_avg_steps.append(sum(number_of_steps)/successfully_completed)
-
-    print(list_completed)
-    print(list_avg_steps)
-    print(list_avg_time_per_success)
-    print("Average total succesfully completed: ", sum(list_completed)/tests)
+    print("Average total succesfully completed: ", (sum(list_completed)/tests)/iterations*100, "%")
     print("Average total steps: ", sum(list_avg_steps)/tests)
     print("Average total time: ", sum(list_avg_time_per_success)/tests, "\n")
 
 
 if __name__ == "__main__":
-    test_online_a_star(10, 3)
-    #test_classic_a_star(500,3)
+    #test_online_a_star(300, 10)
+    test_classic_a_star(300,10)

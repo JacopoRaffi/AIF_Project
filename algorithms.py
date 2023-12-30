@@ -165,10 +165,13 @@ def get_best_global_distance(start: Tuple[int, int], boulders: List[Tuple[int,in
         dist = dist_player_boulder + dist_boulder_river[1] #position 1 is just the value
         distances.append((x, y, dist, dist_boulder_river[1]))
 
+    
+    if len(distances) == 0:
+        return -1, -1
     min_distance = min(distances, key=lambda x: (x[2], x[3]))
     return min_distance[0], min_distance[1]
 
-def push_one_boulder_into_river(state, env : gym.Env,black_list_boulder, target=None): 
+def push_one_boulder_into_river(state, env : gym.Env,black_list_boulder, target=None, plot=True): 
     """
     Pushes one boulder into the river in the game environment.
 
@@ -185,9 +188,18 @@ def push_one_boulder_into_river(state, env : gym.Env,black_list_boulder, target=
     game_map = state['chars']
     game = state['pixel']
 
+    
+
     start = get_player_location(game_map)
+
+    if start is None:
+        return None, None, None
+
     boulders = get_boulder_locations(game_map, black_list_boulder)
-    river_positions = find_river(env, game_map)
+    
+    river_positions = find_river(env, game_map, black_list_boulder)
+    
+    
 
     #If there is no target means that is the first boulder pushed into the river
     #then proceed to find the best boulder to push into the river within one of the river positions
@@ -237,7 +249,7 @@ def push_one_boulder_into_river(state, env : gym.Env,black_list_boulder, target=
         else:
             agent_full_path = None
     
-    return online_a_star(start, agent_full_path, env, game_map,game ,pushing_position, nearest_pushing_position, coordinates_min_boulder, path_boulder_river[-1], black_list_boulder) #Start to walk and recompute the path if needed
+    return online_a_star(start, agent_full_path, env, game_map,game ,pushing_position, nearest_pushing_position, coordinates_min_boulder, path_boulder_river[-1], black_list_boulder, plot) #Start to walk and recompute the path if needed
     
 def check_better_path(new_map, current_target, actual_target=None):
     """
@@ -266,6 +278,7 @@ def check_boulder_to_river(new_map, current_boulder):
     """
 
     river_positions = get_river_locations(new_map)
+
     new_river_target, _ = get_min_distance_point_to_points(current_boulder[0], current_boulder[1], river_positions)
 
     new_path = a_star(new_map, current_boulder, new_river_target, True, get_optimal_distance_point_to_point) #compute new boulder path
@@ -287,15 +300,17 @@ def push_new_boulder(old_map, new_map, agent_pos, river, nearest_first_pushing_p
                 None,None means do nothing new
     """
 
-    old_pos = get_boulder_locations(old_map, boulder_symbol)
-    new_pos = get_boulder_locations(new_map, boulder_symbol)
+    old_pos = get_boulder_locations(old_map, black_list_boulder,boulder_symbol)
+    new_pos = get_boulder_locations(new_map, black_list_boulder,boulder_symbol)
+    
 
     if len(old_pos) != len(new_pos): #if there is at least one new boulder seen by the agent after the step 
         new_boulder = get_best_global_distance(agent_pos, new_pos, river)
        
         #if new_boulder == current_boulder: #if the new boulder is the same as the current one
             #return None, None, current_boulder
-
+        if(new_boulder == (-1,-1)): #if there are no more boulders to push
+            return None, None, None, None
         temp = get_min_distance_point_to_points(new_boulder[0], new_boulder[1], river)
         river_target = tuple(temp[0])
         boulder_to_river = a_star(new_map, new_boulder, river_target, True, get_optimal_distance_point_to_point)
@@ -316,9 +331,11 @@ def push_new_boulder(old_map, new_map, agent_pos, river, nearest_first_pushing_p
     else:
         return None, current_boulder, None, nearest_first_pushing_pos
     
-def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, game : np.ndarray, first_pushing_position : Tuple[int,int], nearest_pushing_position : Tuple[int,int], current_boulder : Tuple[int,int], river_target, black_list_boulder):
+def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : gym.Env, game_map : np.ndarray, game : np.ndarray, first_pushing_position : Tuple[int,int], nearest_pushing_position : Tuple[int,int], current_boulder : Tuple[int,int], river_target, black_list_boulder, plot=True):
     old_map = new_map = game_map.copy() #Initialize the old and new map with the current game map 
-    image = plt.imshow(game[25:300, :475]) #Plotting the initial image
+    
+    if plot:
+        image = plt.imshow(game[25:300, :475]) #Plotting the initial image
 
 
     current_river_target = river_target
@@ -331,7 +348,8 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
         actions, names = actions_from_path(start, path) #Get the actions to follow the path #TODO: optimize take only 1 action and not the whole list
         observation, reward, done, info = env.step(actions[0]) #Execute the first action
 
-        plot_anim_seq_online_a_star(observation, image) #Plots the animated sequence of the agent
+        if plot:
+            plot_anim_seq_online_a_star(observation, image) #Plots the animated sequence of the agent
 
         if(len(path) == 1): #Finish the execution without computing a path with a new boulder
             return observation, current_river_target, len(final_path)
@@ -343,17 +361,18 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
         if is_player_same_position(start, prev_position):
             state, result, river_target = avoid_obstacle(game_map, start, actions[0], env)
             if result == 0:
-                return None, None, None
+                return state, None, None
             elif result == 1:
                 return state, river_target, len(final_path)
             
             elif result == 2:
                 black_list_boulder.append(current_boulder)
-                return None, None, black_list_boulder
+                return state, None, black_list_boulder
 
         if(are_less_black_blocks(new_map, old_map)): #if there are less black blocks than before
             newpath, current_boulder, true_pushing_position, nearest_pushing_position = push_new_boulder(old_map, new_map, start, get_river_locations(new_map), nearest_pushing_position, current_boulder, black_list_boulder)
-               
+            if current_boulder is None:
+                return observation, None, None   
             # update path boulder to river iff near the boulder
             path_temp2, first2, new_river_target, tmp_boulder = check_boulder_to_river(new_map, current_boulder)
 
@@ -361,7 +380,7 @@ def online_a_star(start: Tuple[int, int], path : [List[Tuple[int,int]]], env : g
                 path_temp = check_better_path(new_map, nearest_pushing_position, actual_target=first_pushing_position)
                 
                 if path_temp is None:
-                    return None, None, None
+                    return observation, None, None
 
                 if path_temp[-1] == path_temp2[0]:
                     final_path_temp = path_temp[:-1] + path_temp2 # concatenate the two new path
@@ -414,23 +433,29 @@ def get_neighbour_pushing_position(game_map: np.ndarray, pushing_position: Tuple
     return neighbours[0]
     
 def find_exit(env : gym.Env , game_map : np.ndarray):
+    
     player_pos = get_player_location(game_map)
     exit_pos = find_stairs(env, game_map)
-    rewards = []
+    rewards = [0.0]
+    steps = 0
 
-    if(exit_pos is None):
-        return 0.0
+    if exit_pos is None:
+        return 0.0, 0 
 
     path_to_exit = a_star(game_map, player_pos, exit_pos, False, False, get_optimal_distance_point_to_point)
     actions_to_exit,names = actions_from_path(player_pos, path_to_exit[1:])
 
     for action in actions_to_exit:
         s, r, _, _ = env.step(action)
+        steps = steps + 1
         #print("player:",get_player_location(s['chars']), "exit:", exit_pos)
         if get_player_location(s['chars']) == None:
             rewards.append(r)
             break
         else:
             rewards.append(r)
-
-    return rewards[-1] #Return the reward of the last action
+        
+    if rewards[-1] is not None:
+        return rewards[-1], steps
+    else:
+        return 0.0, steps
