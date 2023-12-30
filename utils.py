@@ -1,4 +1,5 @@
 import gym
+import minihack
 import numpy as np
 import math
 import time
@@ -493,14 +494,22 @@ def compute_percentage_difference(array1, array2):
     return round(percentage_difference, 2)
 
 def new_init_(self, *args, **kwargs):
-        kwargs["max_episode_steps"] = kwargs.pop("max_episode_steps", 350)
-        n_monster = kwargs.pop("n_monster", 0)
-        n_boulder = kwargs.pop("n_boulder", 5)
-        narrow = kwargs.pop("narrow", False)
-        lava = kwargs.pop("lava", False)
+    """
+    Initialize the environment
 
-        if narrow:
-            map = """
+    Parameters:
+    args: arguments
+    kwargs: keyword arguments
+    """
+
+    kwargs["max_episode_steps"] = kwargs.pop("max_episode_steps", 350)
+    n_monster = kwargs.pop("n_monster", 0)
+    n_boulder = kwargs.pop("n_boulder", 5)
+    narrow = kwargs.pop("narrow", False)
+    lava = kwargs.pop("lava", False)
+
+    if narrow:
+        map = """
 ....................W....
 ....................W....
 ....................W....
@@ -509,8 +518,8 @@ def new_init_(self, *args, **kwargs):
 ....................W....
 ....................W....
 """
-        elif not lava:
-            map = """
+    elif not lava:
+        map = """
 ..................WWW....
 ..................WWW....
 ..................WWW....
@@ -519,8 +528,8 @@ def new_init_(self, *args, **kwargs):
 ..................WWW....
 ..................WWW....
 """
-        else:
-            map = """
+    else:
+        map = """
 ..................LLL....
 ..................LLL....
 ..................WWW....
@@ -530,20 +539,27 @@ def new_init_(self, *args, **kwargs):
 ..................LLL....
 """
 
-        lvl_gen = LevelGenerator(map=map)
-        lvl_gen.set_start_rect((0, 0), (18, 6))
+    lvl_gen = LevelGenerator(map=map)
+    lvl_gen.set_start_rect((0, 0), (18, 6))
 
-        for _ in range(n_monster):
-            lvl_gen.add_monster()
+    for _ in range(n_monster):
+        lvl_gen.add_monster()
 
-        lvl_gen.set_area_variable(
-            "$boulder_area", type="fillrect", x1=1, y1=1, x2=18, y2=5
+    lvl_gen.set_area_variable(
+        "$boulder_area", type="fillrect", x1=1, y1=1, x2=18, y2=5
+    )
+    for _ in range(n_boulder):
+        lvl_gen.add_object_area(
+            "$boulder_area", name="boulder", symbol="`"
         )
-        for _ in range(n_boulder):
-            lvl_gen.add_object_area(
-                "$boulder_area", name="boulder", symbol="`"
-            )
 
-        lvl_gen.add_goal_pos((24, 2))
+    lvl_gen.add_goal_pos((24, 2))
 
-        MiniHackNavigation.__init__(self, *args, des_file=lvl_gen.get_des(), **kwargs)
+    MiniHackNavigation.__init__(self, *args, des_file=lvl_gen.get_des(), **kwargs)
+
+def create_env() -> Tuple[dict, gym.Env]:
+    minihack.envs.river.MiniHackRiver.__init__ = new_init_  # Aggiornamento mappa river
+    env = gym.make("MiniHack-River-Narrow-v0", observation_keys=("chars", "pixel", "colors"), seeds = [1,2,8])
+    state = env.reset()
+
+    return state, env
