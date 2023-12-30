@@ -12,6 +12,7 @@ The Minihack Crossing River dependencies are:
 
 Other software dependencies are closely related to the requirements for installing these libraries.
 
+Note: Before MiniHack install NLE.
 ## Usage
 <!-- Specify to execute the report notebook  -->
 
