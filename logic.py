@@ -501,7 +501,7 @@ def find_stairs(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]
 
     return stairs_coordinates
 
-def find_river(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]]:
+def find_river(game_env: gym.Env, game_map: np.ndarray, black_list_boulder) -> List[Tuple[int, int]]:
     """
         moves the player until a water block is found
         a river is assumed to be a vertical straight line of water blocks
@@ -519,7 +519,7 @@ def find_river(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]]
     found = False
     player_location = get_player_location(game_map)
     while not found: 
-        action = choose_best_action(get_valid_moves(game_map, player_location, (-1,-1), False, False), game_map, player_location)
+        action = choose_best_action(get_valid_moves(game_map, player_location, (-1,-1), False, False), game_map, player_location, black_list_boulder)
         obs_state, _, _, _ = game_env.step(action)
 
         river_coordinates = get_river_locations(obs_state["chars"])
