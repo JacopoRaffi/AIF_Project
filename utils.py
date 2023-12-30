@@ -352,10 +352,10 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
         image.set_data(s['pixel'][:, :])
         player_positions.append(get_player_location(game_map))
         time.sleep(0.5)
-    print("Rewards: ")
+    #print("Rewards: ")
     for r in rewards:
         print(r)
-    print("Total reward: ", sum(rewards))
+    #print("Total reward: ", sum(rewards))
         
     return rewards
 
@@ -557,9 +557,13 @@ def new_init_(self, *args, **kwargs):
 
     MiniHackNavigation.__init__(self, *args, des_file=lvl_gen.get_des(), **kwargs)
 
-def create_env() -> Tuple[dict, gym.Env]:
+def create_env(seeds=[]) -> Tuple[dict, gym.Env]:
     minihack.envs.river.MiniHackRiver.__init__ = new_init_  # Aggiornamento mappa river
-    env = gym.make("MiniHack-River-Narrow-v0", observation_keys=("chars", "pixel", "colors"), seeds = [1,2,8])
-    state = env.reset()
+    if len(seeds) == 0:
+        env = gym.make("MiniHack-River-Narrow-v0", observation_keys=("chars", "pixel", "colors"))
+        state = env.reset()
+    else:
+        env = gym.make("MiniHack-River-Narrow-v0", observation_keys=("chars", "pixel", "colors"), seeds=seeds)
+        state = env.reset()
 
     return state, env
