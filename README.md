@@ -20,7 +20,7 @@ git clone https://github.com/JacopoRaffi/Minihack_Crossing_River.git
 
 Move into the directory 
 ```bash
-cd Minihack_Crossing_RIver
+cd Minihack_Crossing_River
 ```
 
 Install the requirements
