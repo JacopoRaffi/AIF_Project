@@ -20,5 +20,6 @@ Note: Before MiniHack install NLE.
 <!-- Describe what python files contain -->
 
 ## Authors
+The authors are sorted in alphabetical order of name.
 
 [Andrea Piras](https://github.com/aprs3), [Chiara Cecchetti](https://github.com/cecchiara99), [Jacopo Raffi](https://github.com/JacopoRaffi), [Nicola Emmolo](https://github.com/nicolaemmolo)
