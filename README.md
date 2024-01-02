@@ -1,7 +1,8 @@
 # MiniHack Crossing River
 
 ## Description
-The project is based on the standard "River" environment from the MiniHack Environment Zoo (https://minihack.readthedocs.io/en/latest/envs/navigation/river.html).\
+The project is based on the standard "River" environment from the MiniHack Environment Zoo (https://minihack.readthedocs.io/en/latest/envs/navigation/river.html).
+
 The final goal of the agent is to reach the stairs, which are on the other side of the river. To do this, the agent must push a boulder into the river. After that the agent can cross it; in Nethack, swimming across a river could prove fatal for the agent.
 
 The goal of the project is to find a solution that is able to complete as many games as possible in the most efficient way in terms of the number of steps performed.
