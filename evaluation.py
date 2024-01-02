@@ -71,9 +71,6 @@ def test_online_a_star(iterations, tests):
     avg_success = (sum(list_completed)/tests) / iterations * 100
     avg_step = sum(list_avg_steps)/tests
     avg_time_succ = sum(list_avg_time_per_success)/tests
-    print("Average total succesfully completed: ", (sum(list_completed)/tests)/iterations*100, "%")
-    print("Average total steps: ", sum(list_avg_steps)/tests)
-    print("Average total time: ", sum(list_avg_time_per_success)/tests, "\n")
 
     return avg_success, avg_step, avg_time_succ
 
@@ -203,9 +200,6 @@ def test_classic_a_star(iterations,tests):
     avg_success = (sum(list_completed)/tests) / iterations * 100
     avg_step = sum(list_avg_steps)/tests
     avg_time = sum(list_avg_time_per_success)/tests
-    print("Average total succesfully completed: ", (sum(list_completed)/tests)/iterations*100, "%")
-    print("Average total steps: ", sum(list_avg_steps)/tests)
-    print("Average total time: ", sum(list_avg_time_per_success)/tests, "\n")
 
     return avg_success, avg_step, avg_time
 

@@ -353,8 +353,8 @@ def plot_animated_sequence(env: gym.Env ,game: np.ndarray , game_map : np.ndarra
         player_positions.append(get_player_location(game_map))
         time.sleep(0.5)
     #print("Rewards: ")
-    for r in rewards:
-        print(r)
+    #for r in rewards:
+        #print(r)
     #print("Total reward: ", sum(rewards))
         
     return rewards
