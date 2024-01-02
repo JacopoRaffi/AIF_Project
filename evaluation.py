@@ -68,28 +68,16 @@ def test_online_a_star(iterations, tests):
         list_avg_time_per_success.append(sum(avg_time) / successfully_completed)
         list_avg_steps.append(sum(number_of_steps)/successfully_completed)
 
+    avg_success = (sum(list_completed)/tests) / iterations * 100
+    avg_step = sum(list_avg_steps)/tests
+    avg_time_succ = sum(list_avg_time_per_success)/tests
     print("Average total succesfully completed: ", (sum(list_completed)/tests)/iterations*100, "%")
     print("Average total steps: ", sum(list_avg_steps)/tests)
     print("Average total time: ", sum(list_avg_time_per_success)/tests, "\n")
 
+    return avg_success, avg_step, avg_time_succ
 
-def test_classic_a_star(iterations, tests):
-    """
-    Test the A* classic algorithm for crossing the river in a MiniHack environment.
 
-    Args:
-        iterations (int): The number of iterations to run the test.
-        tests (int): The number of tests to perform.
-
-    Returns:
-        None
-    """
-    list_completed = []
-    list_avg_time_per_success = []
-    list_avg_steps = []
-
-    print("\nStarting test: A* classic\n")
-    # Rest of the code...
 def test_classic_a_star(iterations,tests):
     list_completed = []
     list_avg_time_per_success = []
@@ -212,9 +200,14 @@ def test_classic_a_star(iterations,tests):
             list_avg_time_per_success.append(sum(avg_time) / successfully_completed)
             list_avg_steps.append(sum(number_of_steps)/successfully_completed)
 
+    avg_success = (sum(list_completed)/tests) / iterations * 100
+    avg_step = sum(list_avg_steps)/tests
+    avg_time = sum(list_avg_time_per_success)/tests
     print("Average total succesfully completed: ", (sum(list_completed)/tests)/iterations*100, "%")
     print("Average total steps: ", sum(list_avg_steps)/tests)
     print("Average total time: ", sum(list_avg_time_per_success)/tests, "\n")
+
+    return avg_success, avg_step, avg_time
 
 
 if __name__ == "__main__":
