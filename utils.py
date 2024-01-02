@@ -557,6 +557,25 @@ def new_init_(self, *args, **kwargs):
 
     MiniHackNavigation.__init__(self, *args, des_file=lvl_gen.get_des(), **kwargs)
 
+def plot_results(avg_success, avg_step, avg_time, on_avg_success, on_avg_step, on_avg_time):
+    fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+    axs[0].set_title('Success Percentage')
+    axs[1].set_title('Average Steps')
+    axs[2].set_title('Average Execution Time')
+
+    labels = ["Offline A*", "Online A*"]
+    colors = ['red', 'blue']
+
+    axs[0].set_ylabel("% of success")
+    axs[1].set_ylabel("N. of Steps")
+    axs[2].set_ylabel("Time (s)")
+
+    axs[0].bar(labels, [avg_success, on_avg_success], color=['red', 'blue'])
+    axs[1].bar(labels, [avg_step, on_avg_step], color=['red', 'blue'])
+    axs[2].bar(labels, [avg_time, on_avg_time], color=['red', 'blue'])
+
+    plt.show()
+
 def create_env(seeds=[]) -> Tuple[dict, gym.Env]:
     minihack.envs.river.MiniHackRiver.__init__ = new_init_  # Aggiornamento mappa river
     if len(seeds) == 0:
