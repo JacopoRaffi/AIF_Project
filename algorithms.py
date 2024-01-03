@@ -198,7 +198,6 @@ def push_one_boulder_into_river(state, env: gym.Env, black_list_boulder, target=
     game = state['pixel']
 
     
-
     start = get_player_location(game_map)
 
     if start is None:
@@ -207,7 +206,6 @@ def push_one_boulder_into_river(state, env: gym.Env, black_list_boulder, target=
     boulders = get_boulder_locations(game_map, black_list_boulder)
     
     river_positions = find_river(env, game_map, black_list_boulder)
-    
     
 
     # If there is no target means that is the first boulder pushed into the river
@@ -224,11 +222,9 @@ def push_one_boulder_into_river(state, env: gym.Env, black_list_boulder, target=
 
     # Calculating the path from the boulder to the river shortest distance
     path_boulder_river = a_star(game_map, coordinates_min_boulder,final_position, hasBoulder, False, get_optimal_distance_point_to_point)
-    #path_boulder_river.append(final_position) 
 
     # Calculating the position in which the agent have to be in order to push correctly the boulder into the river
     pushing_position = position_for_boulder_push(coordinates_min_boulder, path_boulder_river[1])[1]
-    #backup_original_pushing_position = pushing_position #Keep track of the original pushing position 
     nearest_pushing_position = pushing_position
     if game_map[pushing_position] == ord(" "): # The target is an unseen block
         nearest_pushing_position = get_neighbour_pushing_position(game_map, pushing_position, coordinates_min_boulder) # !!!Nearest position to the boulder pushing pos
@@ -320,11 +316,10 @@ def push_new_boulder(old_map, new_map, agent_pos, river, nearest_first_pushing_p
         - boulder_symbol (str): The boulder symbol.
 
         Return:
-        
-        :return: the new path to follow (iff there are changes on the state) and the actual target for the first push of the boulder and
-                the best new boulder to push
-                path, None means that the final element of the path is the actual target 
-                None,None means do nothing new
+        - list: The new path to follow.
+        - tuple: The new boulder to push.
+        - tuple: The first pushing position.
+        - tuple: The nearest pushing position.
     """
 
     old_pos = get_boulder_locations(old_map, black_list_boulder,boulder_symbol)
@@ -333,10 +328,8 @@ def push_new_boulder(old_map, new_map, agent_pos, river, nearest_first_pushing_p
 
     if len(old_pos) != len(new_pos): # If there is at least one new boulder seen by the agent after the step 
         new_boulder = get_best_global_distance(agent_pos, new_pos, river)
-       
-        # If new_boulder == current_boulder: #if the new boulder is the same as the current one
-            #return None, None, current_boulder
-        if(new_boulder == (-1,-1)): #if there are no more boulders to push
+        
+        if(new_boulder == (-1,-1)): # If there are no more boulders to push
             return None, None, None, None
         temp = get_min_distance_point_to_points(new_boulder[0], new_boulder[1], river)
         river_target = tuple(temp[0])
@@ -359,6 +352,27 @@ def push_new_boulder(old_map, new_map, agent_pos, river, nearest_first_pushing_p
         return None, current_boulder, None, nearest_first_pushing_pos
     
 def online_a_star(start: Tuple[int, int], path: [List[Tuple[int,int]]], env: gym.Env, game_map: np.ndarray, game: np.ndarray, first_pushing_position: Tuple[int,int], nearest_pushing_position: Tuple[int,int], current_boulder: Tuple[int,int], river_target, black_list_boulder, plot=True):
+    """
+        Executes the online A* algorithm.
+
+        Parameters:
+        - start (Tuple[int, int]): The starting position.
+        - path (List[Tuple[int,int]]): The path to follow.
+        - env (gym.Env): The game environment.
+        - game_map (numpy.ndarray): The map of the game.
+        - game (numpy.ndarray): The game state.
+        - first_pushing_position (Tuple[int,int]): The first pushing position.
+        - nearest_pushing_position (Tuple[int,int]): The nearest pushing position.
+        - current_boulder (Tuple[int,int]): The current boulder to push.
+        - river_target (Tuple[int,int]): The river target.
+        - black_list_boulder (list): List of boulder coordinates that we can't push.
+        - plot (bool, optional): True if the animated sequence of the agent has to be plotted, False otherwise. Defaults to True.
+
+        Returns:
+        - numpy.ndarray: The new state of the game.
+        - Tuple[int,int]: The new river target.
+        - int: The length of the path.
+    """
     old_map = new_map = game_map.copy() # Initialize the old and new map with the current game map 
     
     if plot:
@@ -372,7 +386,7 @@ def online_a_star(start: Tuple[int, int], path: [List[Tuple[int,int]]], env: gym
         final_path.append(path.pop(0)) # Remove the first action because it has already been executed
         path_length = len(path) # Update the length of the path
         old_map = new_map.copy() # Map at timestep t-1
-        actions, names = actions_from_path(start, path) # Get the actions to follow the path #TODO: optimize take only 1 action and not the whole list
+        actions, names = actions_from_path(start, path) # Get the actions to follow the path
         observation, reward, done, info = env.step(actions[0]) # Execute the first action
 
         if plot:
@@ -428,8 +442,6 @@ def online_a_star(start: Tuple[int, int], path: [List[Tuple[int,int]]], env: gym
                 path = final_path_temp
                 first_pushing_position = true_pushing_position # Update the first pushing position
                 current_river_target = new_river_target # Update the current river target
-        
-        #print("Path: ", path)
 
     return observation, current_river_target, len(final_path) # Return just for test purposes (it will be removed)
 
@@ -469,8 +481,7 @@ def find_exit(env: gym.Env , game_map: np.ndarray):
         - game_map (np.ndarray): The game map.
 
         Returns:
-        - 
-
+        - Tuple[float, int]: The reward and the number of steps needed to reach the exit.
     """
     
     player_pos = get_player_location(game_map)
@@ -487,7 +498,7 @@ def find_exit(env: gym.Env , game_map: np.ndarray):
     for action in actions_to_exit:
         s, r, _, _ = env.step(action)
         steps = steps + 1
-        #print("player:",get_player_location(s['chars']), "exit:", exit_pos)
+
         if get_player_location(s['chars']) == None:
             rewards.append(r)
             break

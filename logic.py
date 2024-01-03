@@ -483,8 +483,6 @@ def push_boulder_path(boulder_path: List[Tuple[int, int]]) -> Tuple[List[int], L
     if len(agent_path) > 0:
         agent_actions,names = actions_from_path(agent_path[0], agent_path[1:]) # Get the actions the agent should perform to follow the path
     
-    #print(names, "E")
-    #agent_actions.append(1) #add action to push to the river
     return agent_actions, agent_path
 
 def choose_best_action(valid_moves: List[Tuple[int, int]], game_map: np.ndarray, player_position: Tuple[int, int], black_list_boulder) -> int: 
@@ -545,7 +543,6 @@ def find_stairs(game_env: gym.Env, game_map: np.ndarray) -> List[Tuple[int, int]
         obs_state, _, _, _ = game_env.step(action)
         game_map = obs_state["chars"] # Update observable map so to take the next "best action"
         color_map = obs_state["colors"]
-        #river_coordinates = np.where(obs_state["chars"] == ord("}"))
         stairs_coordinates = get_exit_location(game_map)
         if not stairs_coordinates is None: # If the river is found
             found = True

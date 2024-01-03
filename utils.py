@@ -137,12 +137,6 @@ def are_less_black_blocks(old_map, new_map):
         Returns:
         - bool: True iff the number of black blocks (unseen map) is fewer than the previous state.
     """
-    
-    """
-        old_map: the previous state of the game map
-        new_map: the current state of the game map
-        return: True iff the number of black blocks (unseen map) is fewer than the previous state
-    """
 
     black_block = ord(" ") # Integer rapresentation of an unseen block of map
     tuples = np.where(old_map == black_block)
@@ -163,11 +157,6 @@ def are_less_black_blocks_light(old_number_black_blocks, new_map):
 
         Returns:
         - bool: True iff the number of black blocks (unseen map) is fewer than the previous state.
-    """
-    """
-        old_number_black_blocks: the previous number of black blocks (unseen blocks)
-        new_map: the current state of the game map
-        return: True iff the number of black blocks (unseen map) is fewer than the previous state
     """
 
     black_block = ord(" ") # Integer rapresentation of an unseen block of map
@@ -423,10 +412,6 @@ def plot_animated_sequence(env: gym.Env, game: np.ndarray, game_map: np.ndarray,
         image.set_data(s['pixel'][:, :])
         player_positions.append(get_player_location(game_map))
         time.sleep(0.5)
-    #print("Rewards: ")
-    #for r in rewards:
-        #print(r)
-    #print("Total reward: ", sum(rewards))
         
     return rewards
 
