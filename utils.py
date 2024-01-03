@@ -309,18 +309,19 @@ def chebyshev_dist(x1 : int, y1 : int, x2 : int, y2 : int):
 
 def execute_actions(env: gym.Env ,game: np.ndarray , game_map : np.ndarray, actions : List[int]):
     """
-    Executes a list of actions in the environment and returns the rewards obtained for each action.
-    Without plotting.
+    Executes a sequence of actions in the game environment and returns the rewards obtained for each
+    action (without plotting).
 
     Parameters:
-    - env (gym.Env): The environment in which the actions will be executed.
+    - env (gym.Env): The game environment.
     - game (np.ndarray): The game state.
     - game_map (np.ndarray): The game map.
-    - actions (List[int]): The list of actions to be executed.
+    - actions (List[int]): The sequence of actions to be performed.
 
     Returns:
-    - rewards (List[float]): The rewards obtained for each action.
+    - rewards (List[float]): The rewards obtained by performing the sequence of actions.
     """
+    
     rewards = []
     for action in actions:
         s, r, _, _ = env.step(action)
