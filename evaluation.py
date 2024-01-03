@@ -4,15 +4,18 @@ from utils import *
 
 def test_online_a_star(iterations, tests):
     """
-    Test the A* algorithm online.
+        Test the A* algorithm online.
 
-    Args:
-        iterations (int): The number of iterations to run the test.
-        tests (int): The number of tests to perform.
+        Parameters:
+        - iterations (int): The number of iterations to run the test.
+        - tests (int): The number of tests to perform.
 
-    Returns:
-        None
+        Returns:
+        - avg_success (float): The average success rate of the tests.
+        - avg_step (float): The average number of steps to complete the level.
+        - avg_time_succ (float): The average time to complete the level.
     """
+
     print("\nStarting test: A* online\n")
     list_completed = []
     list_avg_time_per_success = []
@@ -76,6 +79,19 @@ def test_online_a_star(iterations, tests):
 
 
 def test_classic_a_star(iterations,tests):
+    """
+        Test the A* algorithm classic.
+
+        Parameters:
+        - iterations (int): The number of iterations to run the test.
+        - tests (int): The number of tests to perform.
+
+        Returns:
+        - avg_success (float): The average success rate of the tests.
+        - avg_step (float): The average number of steps to complete the level.
+        - avg_time (float): The average time to complete the level.
+    """
+
     list_completed = []
     list_avg_time_per_success = []
     list_avg_steps = []
